@@ -1,6 +1,7 @@
 // Game -- the controller class for S.Y.T.Y.C.D...O.M.G? (implementation)
 //
 
+#include <cstdlib>
 #include <cstring>
 #include <sstream>
 using namespace std;

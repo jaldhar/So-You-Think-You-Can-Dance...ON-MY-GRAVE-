@@ -1,6 +1,7 @@
 // Potion -- A Potion in S.Y.T.Y.C.D...O.M.G? (implementation)
 //
 
+#include <cstdlib>
 using namespace std;
 
 #include "player.h"

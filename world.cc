@@ -2,6 +2,7 @@
 // (implementation)
 //
 
+#include <cstdlib>
 #include <sstream>
 #include <string>
 using namespace std;
