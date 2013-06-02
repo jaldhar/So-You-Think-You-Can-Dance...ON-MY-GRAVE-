@@ -6,29 +6,29 @@
 
 #include "armor.h"
 #include "combat.h"
+#include "potion.h"
+#include "treasure.h"
 #include "shield.h"
 #include "weapon.h"
 
-class Player: public Combat {
+class Player : public Combat {
 public:
     Player();
-    Player* clone();
-    Armor*  armor();
-    void setArmor(Armor* a);
-    int  potions();
-    void setPotions(int n);
-    Shield*  shield();
-    void setShield(Shield* s);
-    int  treasure();
-    void setTreasure(int n);
-    Weapon*  weapon();
-    void setWeapon(Weapon* w);
-protected:
-    int     _potions;
-    int     _treasure;
-    Weapon* _weapon;
-    Shield* _shield;
-    Armor*  _armor;
+    virtual ~Player();
+    std::unique_ptr<Armor>&   armor() const;
+    void                      setArmor(Armor* armor);
+    int                       potions() const;
+    void                      setPotions(int potions);
+    std::unique_ptr<Shield>&  shield() const;
+    void                      setShield(Shield* shield);
+    int                       treasure() const;
+    void                      setTreasure(int amount);
+    std::unique_ptr<Weapon>&  weapon() const;
+    void                      setWeapon(Weapon* weapon);
+
+private:
+    struct PlayerImpl;
+    static PlayerImpl _impl;
 };
 
 #endif

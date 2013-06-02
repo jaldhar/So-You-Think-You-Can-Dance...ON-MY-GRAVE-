@@ -6,16 +6,27 @@ using namespace std;
 
 #include "combat.h"
 
-Combat::Combat(int health, int offense, int defense) {
-    _health  = health;
-    _offense = offense;
-    _defense = defense;
+struct Combat::CombatImpl {
+    CombatImpl();
+    CombatImpl(int health, int offense, int defense);
+    ~CombatImpl()=default;
+
+    int         _health;
+    int         _offense;
+    int         _defense;
+};
+
+Combat::Combat(int health, int offense, int defense) :
+    _impl { new Combat::CombatImpl(health, offense, defense) } {
 }
+
+Combat::~Combat()=default;
+
 
 int Combat::attack() {
     int hits = 0;
 
-    for(int i = 0; i < _offense; i++ ) {
+    for(int i = 0; i < _impl->_offense; i++ ) {
         if (rand() % 6 == 5) {
             hits++;
         }
@@ -27,7 +38,7 @@ int Combat::attack() {
 int Combat::defend() {
     int parries = 0;
 
-    for(int i = 0; i < _defense; i++ ) {
+    for(int i = 0; i < _impl->_defense; i++ ) {
         if (rand() % 6 == 5) {
             parries++;
         }
@@ -36,26 +47,36 @@ int Combat::defend() {
     return parries;
 }
 
-int Combat::defense() {
-    return _defense;
+int Combat::defense() const {
+    return _impl->_defense;
 }
 
-void Combat::setDefense(int n) {
-    _defense += n;
+void Combat::setDefense(int defense) {
+    _impl->_defense += defense;
 }
 
-int Combat::health() {
-    return _health;
+int Combat::health() const {
+    return _impl->_health;
 }
 
-void Combat::setHealth(int n) {
-    _health += n;
+void Combat::setHealth(int health) {
+    _impl->_health += health;
 }
 
-int Combat::offense() {
-    return _offense;
+int Combat::offense() const {
+    return _impl->_offense;
 }
 
-void Combat::setOffense(int n) {
-    _offense += n;
+void Combat::setOffense(int offense) {
+    _impl->_offense += offense;
+}
+
+Combat::CombatImpl::CombatImpl() {
+    CombatImpl(0, 0, 0);
+}
+
+Combat::CombatImpl::CombatImpl(int health, int offense, int defense) {
+    _health  = health;
+    _offense = offense;
+    _defense = defense;
 }

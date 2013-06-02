@@ -1,21 +1,32 @@
-// View -- Abstract base class for S.Y.T.Y.C.D...O.M.G? displays
+// View -- S.Y.T.Y.C.D...O.M.G? display (interface)
 //
 
 #ifndef VIEW_H
 #define VIEW_H 1
 
 #include <string>
+#include "direction.h"
 #include "state.h"
 
-struct View {
-    virtual void  draw() = 0;
-    virtual void  end() = 0;
-    virtual STATE handleInput() = 0;
-    virtual void  init() = 0;
-    virtual void  pause() = 0;
-    virtual void  resize() = 0;
-    virtual void  refresh() = 0;
-    virtual void  shell() = 0;
+class View {
+public:
+    View();
+    ~View();
+    void  alert();
+    void  draw();
+    void  end();
+    STATE handleTopLevelInput();
+    DIRECTION handleDirectionInput();
+    void  init();
+    void  message(const char *msg);
+    void  pause();
+    void  refresh();
+    void  resize();
+    void  shell();
+
+private:
+    struct ViewImpl;
+    static ViewImpl _impl;
 };
 
 #endif

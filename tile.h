@@ -4,22 +4,25 @@
 #ifndef TILE_H
 #define TILE_H 1
 
+#include <memory>
 #include "terrain.h"
-class Item;
 
 class Tile {
 public:
     Tile();
-    Item*   contents();
-    void    setContents(Item* item);
-    void    passable(bool p);
-    bool    isPassable();
-    TERRAIN terrain();
-    void    setTerrain(TERRAIN t);
+    ~Tile();
+    bool    passable() const;
+    void    setPassable(bool p);
+    TERRAIN terrain() const;
+    void    setTerrain(TERRAIN terrain);
+    bool    visible() const;
+    void    setVisible(bool v);
+    bool    isBlock();
+    bool    isDoor();
+
 private:
-    bool    _passable;
-    Item*   _contents;
-    TERRAIN _terrain;
+    struct TileImpl;
+    std::unique_ptr<TileImpl> _impl;
 };
 
 #endif

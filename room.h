@@ -4,11 +4,23 @@
 #ifndef ROOM_H
 #define ROOM_H 1
 
+#include <memory>
+
 class Room {
 public:
-    Room(int y, int x);
+    Room(int yoffset, int xoffset, int height, int width);
+    ~Room();
+    void fill();
+    int  top() const;
+    int  left() const;
+    int  height() const;
+    int  width() const;
+    int  centerX() const;
+    int  centerY() const;
+
 private:
-    int _y1, _x1, _y2, _x2;
+    struct RoomImpl;
+    std::unique_ptr<RoomImpl> _impl;
 };
 
 #endif

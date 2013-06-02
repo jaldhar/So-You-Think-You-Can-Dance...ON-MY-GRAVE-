@@ -4,21 +4,25 @@
 #ifndef COMBAT_H
 #define COMBAT_H 1
 
+#include <memory>
+
 class Combat {
 public:
-    Combat(int health = 0, int offense = 0, int defense = 0);
+    Combat();
+    Combat(int health, int offense, int defense);
+    virtual ~Combat();
     int  attack();
     int  defend();
-    int  defense();
-    void setDefense(int n);
-    int  health();
-    void setHealth(int n);
-    int  offense();
-    void setOffense(int n);
-protected:
-    int _health;
-    int _offense;
-    int _defense;
+    int  defense() const;
+    void setDefense(int defense);
+    int  health() const;
+    void setHealth(int health);
+    int  offense() const;
+    void setOffense(int offense);
+
+private:
+    struct CombatImpl;
+    std::unique_ptr<CombatImpl> _impl;
 };
 
 #endif

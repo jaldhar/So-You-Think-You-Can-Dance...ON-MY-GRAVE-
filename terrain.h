@@ -1,9 +1,16 @@
-// Terrain -- type to represent varieties of terrain in S.Y.T.Y.C.D...O.M.G? 
+// TERRAIN -- Types of background tiles in S.Y.T.Y.C.D...O.M.G? (enum)
 //
 
 #ifndef TERRAIN_H
 #define TERRAIN_H 1
 
-typedef enum { EMPTY = 0, FLOOR, WALL, DOOR } TERRAIN;
+#include <cstdint>
+
+enum class TERRAIN : std::uint8_t { EMPTY = 0, CORRIDOR, H_DOOR_OPEN,
+    H_DOOR_CLOSED, V_DOOR_OPEN, V_DOOR_CLOSED, FLOOR,
+    C_WALL, H_WALL, V_WALL, UL_WALL, UR_WALL, LL_WALL, LR_WALL, TT_WALL,
+    RT_WALL, BT_WALL, LT_WALL, PLAYER, POTION, TREASURE,
+    ZOMBIE, SKELETON, GHOUL, WIGHT, VAMPIRE, IMP, DEMON, FIEND,
+    SHIELD, WEAPON, ARMOR };
 
 #endif

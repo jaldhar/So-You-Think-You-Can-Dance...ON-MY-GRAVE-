@@ -4,18 +4,15 @@
 #ifndef SHIELD_H
 #define SHIELD_H 1
 
+#include <string>
+#include "armament.h"
 #include "item.h"
-#include "take.h"
 
-class Shield: public Item, public virtual Take {
+class Shield: public Item, public Armament {
 public:
-    Shield();
-    Shield(std::string name, std::string article, int offensebonus, int defensebonus);
-    Shield*         clone();
-    bool            take(Player&p, Tile& r);
-private:
-    int _offensebonus;
-    int _defensebonus;
+    Shield(std::string article, std::string name, ITEMTYPE type,
+    int offensebonus, int defensebonus);
+    virtual ~Shield();
 };
 
 #endif

@@ -1,32 +1,33 @@
-// Potion -- A Potion in S.Y.T.Y.C.D...O.M.G? (implementation)
+// Potion -- A potion in S.Y.T.Y.C.D...O.M.G? (implementation)
 //
 
-#include <cstdlib>
 using namespace std;
 
 #include "player.h"
 #include "potion.h"
-#include "tile.h"
 
-Potion::Potion() : Item() {
-    _name =    "potion";
-    _article = "a";
+extern Player player;
+
+struct Potion::PotionImpl {
+    PotionImpl(int number);
+    ~PotionImpl()=default;
+    int _number;
+};
+
+Potion::Potion(int number) : Item("a", "potion", ITEMTYPE::POTION),
+    _impl { new Potion::PotionImpl(number) } {
 }
 
-Potion::Potion(string name, string article) : Item(name, article) {
+Potion::~Potion()=default;
+
+int Potion::number() const {
+    return _impl->_number;
 }
 
-Potion* Potion::clone() {
-    return new Potion(*this);
+void Potion::setNumber(int number) {
+    _impl->_number = number;
 }
 
-bool Potion::take(Player&p, Tile& r) {
-    int number = _article == "a"
-        ? 1
-        : atoi(_article.c_str());
-    p.setPotions(number);
-    r.setContents(0);
-
-    return true;
+Potion::PotionImpl::PotionImpl(int number) {
+    _number = number;
 }
-

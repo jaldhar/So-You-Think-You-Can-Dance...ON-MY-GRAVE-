@@ -1,18 +1,22 @@
-// Potion -- A Potion in S.Y.T.Y.C.D...O.M.G (interface)
+// Potion -- A Potion in S.Y.T.Y.C.D...O.M.G? (interface)
 //
 
 #ifndef POTION_H
 #define POTION_H 1
 
+#include <memory>
 #include "item.h"
-#include "take.h"
 
-class Potion: public Item, public virtual Take {
+class Potion: public Item {
 public:
-    Potion();
-    Potion(std::string name, std::string article);
-    Potion*         clone();
-    bool            take(Player&p, Tile& r);
+    Potion(int number);
+    virtual ~Potion();
+    int number() const;
+    void setNumber(int number);
+
+private:
+    struct PotionImpl;
+    std::unique_ptr<PotionImpl> _impl;
 };
 
 #endif

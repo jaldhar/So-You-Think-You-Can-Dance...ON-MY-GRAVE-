@@ -1,14 +1,17 @@
-// Game -- the controller class for So You Think You Can Dance...ON MY GRAVE?
-// (interface)
+// Game -- the controller class for S.Y.T.Y.C.D...O.M.G? (interface)
 
 #ifndef GAME_H
 #define GAME_H 1
 
-#include "controller.h"
+#include "state.h"
 
-class Game : virtual public Controller {
+class Game {
 public:
-    int   run();
+    Game();
+    ~Game();
+    int run(const char *name, const char *version);
+    STATE close();
+    STATE error();
     STATE move_left();
     STATE move_down();
     STATE move_up();
@@ -17,25 +20,18 @@ public:
     STATE move_upright();
     STATE move_downleft();
     STATE move_downright();
+    STATE open();
     STATE quaff();
     STATE quit();
     STATE refresh();
     STATE resize();
     STATE shell();
     STATE take();
-protected:
-    STATE command();
-    STATE error();
-    STATE fight();
-    STATE move(int row, int col);
+    STATE version();
 
-public:
-    static Game* instance();
-    ~Game();
-
-protected:
-    Game();
-    static Game* _instance;
+private:
+    struct GameImpl;
+    static GameImpl _impl;
 };
 
 #endif

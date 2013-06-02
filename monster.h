@@ -4,20 +4,16 @@
 #ifndef MONSTER_H
 #define MONSTER_H 1
 
-#include "item.h"
+#include <string>
 #include "combat.h"
-class Player;
-class Tile;
+#include "item.h"
+#include "itemtype.h"
 
 class Monster: public Item, public Combat {
 public:
-    Monster();
-    Monster(char symbol, std::string name, std::string article,
-    int health, int offense, int defense);
-    Monster* clone();
-    char symbol();
-private:
-    char _symbol;
+    Monster(std::string article, std::string name, ITEMTYPE type, int health,
+    int offense, int defense);
+    virtual ~Monster();
 };
 
 #endif

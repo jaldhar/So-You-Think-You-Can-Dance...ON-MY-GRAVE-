@@ -4,37 +4,14 @@
 using namespace std;
 
 #include "player.h"
-#include "tile.h"
 #include "weapon.h"
+#include "view.h"
 
-Weapon::Weapon() : Item() {
-    _name         = "weapon";
-    _article      = "a";
-    _offensebonus = 0;
-    _defensebonus = 0;
+extern Player player;
+
+Weapon::Weapon(string article, string name, ITEMTYPE type,
+    int offenseBonus, int defenseBonus) :
+    Item(article, name, type), Armament(offenseBonus, defenseBonus) {
 }
 
-Weapon::Weapon(string name, string article, int offensebonus, int defensebonus)
-: Item(name, article) {
-    _offensebonus = offensebonus;
-    _defensebonus = defensebonus;
-}
-
-Weapon* Weapon::clone() {
-    return new Weapon(*this);
-}
-
-bool Weapon::take(Player&p, Tile& r) {
-    Weapon* temp = p.weapon();
-
-    if(temp) {
-        r.setContents(temp);
-        p.setDefense(-(_defensebonus));
-        p.setOffense(-(_offensebonus));
-    }
-    p.setWeapon(this);
-    p.setDefense(_defensebonus);
-    p.setOffense(_offensebonus);
-
-    return true;
-}
+Weapon::~Weapon()=default;

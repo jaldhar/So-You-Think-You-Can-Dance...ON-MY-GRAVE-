@@ -3,23 +3,12 @@
 
 using namespace std;
 
-#include "combat.h"
 #include "monster.h"
 
-Monster::Monster() : Item(), Combat() {
+Monster::Monster(string article, string name, ITEMTYPE type, int health,
+    int offense, int defense) :
+    Item(article, name, type), Combat(health, offense, defense) {
 }
 
-Monster::Monster(char symbol = 'm', string name = "monster", string article = "a", 
-    int health = 1,int offense = 1, int defense = 0) :
-    Item(name, article),
-    Combat(health, offense, defense) {
-    _symbol = symbol;
-}
+Monster::~Monster()=default;
 
-Monster* Monster::clone() {
-    return new Monster(*this);
-}
-
-char Monster::symbol() {
-    return _symbol;
-}

@@ -4,47 +4,29 @@
 #ifndef WORLD_H
 #define WORLD_H 1
 
-#include <map>
-#include <string>
-#include <vector>
-#include "model.h"
-using namespace std;
+#include <functional>
+#include "item.h"
+#include "monster.h"
+#include "tile.h"
 
-class Item;
-class Monster;
-
-class World : virtual public Model {
+class World {
 public:
-    static World* instance();
-    ~World();
-    void          create();
-    int           height();
-    int           width();
-    int           sectorHeight();
-    int           sectorWidth();
-    Player&       player();
-    int           playerRow();
-    void          setPlayerRow(int row);
-    int           playerCol();
-    void          setPlayerCol(int col);
-    Item*         makeItem();
-    Tile&         tileAt(int row, int col);
-
-protected:
     World();
-
-    static const int MAP_HEIGHT       = 60;
-    static const int MAP_WIDTH        = 80;
-    static const int MAP_SECTORHEIGHT = 20;
-    static const int MAP_SECTORWIDTH  = 16;
-    std::vector<Item*>              _items;
-    Tile*                           _map[MAP_HEIGHT][MAP_WIDTH];
-    std::map<std::string, Monster>  _monsters;
-    int                             _potions[6];
-    Player*                         _player;
-    int                             _playerRow;
-    int                             _playerCol;
-    static World*                   _instance;
+    ~World();
+    void     create();
+    int      height() const;
+    int      width() const;
+    int      playerRow() const;
+    void     setPlayerRow(int row);
+    int      playerCol() const;
+    void     setPlayerCol(int col);
+    void     foreach_item(std::function<void(int, int, std::unique_ptr<Item>&)> callback);
+    Item*    itemAt(int row, int col) const;
+    Item*     removeItem(int row, int col);
+    Tile*    tileAt(int row, int col) const;
+private:
+    struct WorldImpl;
+    static WorldImpl _impl;
 };
 
 #endif

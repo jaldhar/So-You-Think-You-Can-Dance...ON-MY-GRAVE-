@@ -4,18 +4,14 @@
 #ifndef WEAPON_H
 #define WEAPON_H 1
 
+#include "armament.h"
 #include "item.h"
-#include "take.h"
 
-class Weapon: public Item, public virtual Take {
+class Weapon: public Item, public Armament {
 public:
-    Weapon();
-    Weapon(std::string name, std::string article, int offensebonus, int defensebonus);
-    Weapon*         clone();
-    bool            take(Player&p, Tile& r);
-private:
-    int _offensebonus;
-    int _defensebonus;
+    Weapon(std::string article, std::string name, ITEMTYPE type,
+    int offensebonus, int defensebonus);
+    virtual ~Weapon();
 };
 
 #endif

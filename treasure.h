@@ -4,16 +4,19 @@
 #ifndef TREASURE_H
 #define TREASURE_H 1
 
+#include <memory>
 #include "item.h"
-#include "player.h"
-#include "tile.h"
-#include "take.h"
 
-class Treasure: public Item, public virtual Take {
+class Treasure: public Item {
 public:
     Treasure();
-    Treasure*    clone();
-    bool take(Player& p, Tile& r);
+    virtual ~Treasure();
+    int  amount() const;
+    void setAmount(int amount);
+
+private:
+    struct TreasureImpl;
+    std::unique_ptr<TreasureImpl> _impl;
 };
 
 #endif

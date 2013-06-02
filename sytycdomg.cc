@@ -1,20 +1,16 @@
 // sytycdomg.cc -- So You Think You Can Dance...ON MY GRAVE? (main file)
 //
 
-using namespace std;
-
-#include <cstdlib>
-#include <ctime>
 #include "game.h"
-#include "cursesview.h"
-#include "world.h"
+#include "player.h"
 
-Game*           a = Game::instance();
-CursesView*     v = CursesView::instance();
-World*          w = World::instance();
+const char *name = "So You Think You Can Dance...ON MY GRAVE?";
+const char *version = "2.0";
+
+Player player;
 
 int main (int, char **) {
-    srand(time(NULL));
+    Game game;
 
-    return a->run();
+    return game.run(name, version);
 }

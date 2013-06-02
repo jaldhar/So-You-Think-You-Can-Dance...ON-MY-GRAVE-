@@ -3,21 +3,32 @@
 
 using namespace std;
 
+#include "player.h"
 #include "treasure.h"
 
-Treasure::Treasure() : Item() {
-    _name =    "treasure";
-    _article = "some";
+extern Player player;
+
+struct Treasure::TreasureImpl {
+    TreasureImpl();
+    ~TreasureImpl()=default;
+
+    int _amount;
+};
+
+Treasure::Treasure() : Item("some", "treasure", ITEMTYPE::TREASURE),
+    _impl { new Treasure::TreasureImpl() } {
 }
 
-Treasure* Treasure::clone() {
-    return new Treasure(*this);
+Treasure::~Treasure()=default;
+
+int Treasure::amount() const {
+    return _impl->_amount;
 }
 
-bool Treasure::take(Player&p, Tile& r) {
-    p.setTreasure(1);
-    r.setContents(0);
-
-    return true;
+void Treasure::setAmount(int amount) {
+    _impl->_amount = amount;
 }
 
+Treasure::TreasureImpl::TreasureImpl() {
+    _amount = 1;
+}
