@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bitset>
 #include <cstdlib>
 #include <map>
 #include <stdexcept>
@@ -434,7 +435,7 @@ void World::WorldImpl::addRooms(int sectorRows, int sectorCols) {
 }
 
 void World::WorldImpl::addWalls() {
-   //First pass puts a center wall around everything
+   //First pass puts a center wall adjacent to any floor or corridor.
     for (int row = 0; row < MAP_HEIGHT; row++) {
         for (int col = 0; col < MAP_WIDTH; col++) {
 
@@ -473,7 +474,51 @@ void World::WorldImpl::addWalls() {
         }
     }
 
-  // Second pass makes specific wall types as needed.
+    // Second pass makes specific wall types as needed.
+    map<string, TERRAIN> walls = {
+        {"00000000", TERRAIN::C_WALL},
+        {"00000010", TERRAIN::V_WALL},
+        {"00001000", TERRAIN::H_WALL},
+        {"00001010", TERRAIN::UL_WALL},
+        {"00010000", TERRAIN::H_WALL},
+        {"00010010", TERRAIN::UR_WALL},
+        {"00011000", TERRAIN::H_WALL},
+        {"00011001", TERRAIN::H_WALL},
+        {"00011010", TERRAIN::TT_WALL},
+        {"00011100", TERRAIN::H_WALL},
+        {"00011101", TERRAIN::H_WALL},
+        {"00111000", TERRAIN::H_WALL},
+        {"00111001", TERRAIN::H_WALL},
+        {"00111100", TERRAIN::H_WALL},
+        {"01000000", TERRAIN::V_WALL},
+        {"01000010", TERRAIN::V_WALL},
+        {"01000011", TERRAIN::V_WALL},
+        {"01000110", TERRAIN::V_WALL},
+        {"01000111", TERRAIN::V_WALL},
+        {"01001000", TERRAIN::LL_WALL},
+        {"01001010", TERRAIN::LT_WALL},
+        {"01010000", TERRAIN::LR_WALL},
+        {"01010010", TERRAIN::RT_WALL},
+        {"01011000", TERRAIN::BT_WALL},
+        {"01011010", TERRAIN::C_WALL},
+        {"01100010", TERRAIN::V_WALL},
+        {"01100011", TERRAIN::V_WALL},
+        {"01100110", TERRAIN::V_WALL},
+        {"10011000", TERRAIN::H_WALL},
+        {"10011001", TERRAIN::H_WALL},
+        {"10011100", TERRAIN::H_WALL},
+        {"10011101", TERRAIN::H_WALL},
+        {"10111000", TERRAIN::H_WALL},
+        {"10111100", TERRAIN::H_WALL},
+        {"11000010", TERRAIN::V_WALL},
+        {"11000011", TERRAIN::V_WALL},
+        {"11000110", TERRAIN::V_WALL},
+        {"11000111", TERRAIN::V_WALL},
+        {"11100010", TERRAIN::V_WALL},
+        {"11100011", TERRAIN::V_WALL},
+        {"11100110", TERRAIN::V_WALL}
+    };
+
     for (int row = 0; row < MAP_HEIGHT; row++) {
         for (int col = 0; col < MAP_WIDTH; col++) {
 
@@ -483,8 +528,8 @@ void World::WorldImpl::addWalls() {
                 continue;
             }
 
-            int count = 7, edges = 0; // represent the edges as a binary number
-            // TODO: use bitset here maybe.
+            int count = 7;
+            bitset<8> edgeset; // represent the edges as a binary number
             for (int y = row - 1; y < row + 2; y++) {
 
                 if (y < 0 || y > MAP_HEIGHT - 1) {
@@ -503,41 +548,19 @@ void World::WorldImpl::addWalls() {
                     }
 
                     if (_map[y][x]->isBlock()) {
-                        edges += pow(2, count);
+                        edgeset.set(count);
                     }
 
                     count--;
                 }
             }
 
-            if ((edges & 90) == 90) {              // = 01011010
-                t->setTerrain(TERRAIN::C_WALL);
-            } else if ((edges & 88) == 88) {       // = 01011000
-                t->setTerrain(TERRAIN::BT_WALL);
-            } else if ((edges & 82) == 82) {       // = 01010010
-                t->setTerrain(TERRAIN::RT_WALL);
-            } else if ((edges & 74) == 74) {       // = 01001010
-                t->setTerrain(TERRAIN::LT_WALL);
-            } else if ((edges & 26) == 26) {       // = 00011010
-                t->setTerrain(TERRAIN::TT_WALL);
-            } else if ((edges & 80) == 80) {       // = 01010000
-                t->setTerrain(TERRAIN::LR_WALL);
-            } else if ((edges & 72) == 72) {       // = 01001000
-                t->setTerrain(TERRAIN::LL_WALL);
-            } else if ((edges & 18) == 18) {       // = 00010010
-                t->setTerrain(TERRAIN::UR_WALL);
-            } else if ((edges & 10) == 10) {       // = 00001010
-               t->setTerrain(TERRAIN::UL_WALL);
-            } else if ((edges & 66) == 66 || (edges & 64) == 64 ||
-                (edges & 2) == 2) {             // = 01000010,01000000,00000010
-                t->setTerrain(TERRAIN::V_WALL);
-            } else if ((edges & 24) == 24 || (edges & 16) == 16 ||
-                (edges & 8) == 8) {             // = 00011000,00010000,00001000
-                t->setTerrain(TERRAIN::H_WALL);
-            } else if ((edges & 0) == 0) {         // = 00000000
-                t->setTerrain(TERRAIN::C_WALL);
-            } else {
-                fprintf(stderr, "%d\n", edges);    // For debugging.
+            string edges = edgeset.to_string();
+            try {
+                t->setTerrain(walls.at(edges));
+            } catch(out_of_range) {
+                // For debugging though we should not reach here.
+                fprintf(stderr, "%d,%d: %s\n", row, col, edges.c_str());
             }
         }
     }
