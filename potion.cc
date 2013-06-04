@@ -3,10 +3,7 @@
 
 using namespace std;
 
-#include "player.h"
 #include "potion.h"
-
-extern Player player;
 
 struct Potion::PotionImpl {
     PotionImpl(int number);

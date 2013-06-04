@@ -7,8 +7,6 @@
 const char *name = "So You Think You Can Dance...ON MY GRAVE?";
 const char *version = "2.0";
 
-Player player;
-
 int main (int, char **) {
     Game game;
 

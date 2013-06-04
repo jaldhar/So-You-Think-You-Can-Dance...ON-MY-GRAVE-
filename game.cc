@@ -21,7 +21,9 @@ using namespace std;
 #include "weapon.h"
 #include "world.h"
 
-extern Player player;
+static Player player;
+
+static World world;
 
 struct Game::GameImpl {
     STATE directed(string command, function<STATE(GameImpl&, int, int)> func);
@@ -48,18 +50,18 @@ int Game::run(const char *name, const char *version) {
     STATE state = STATE::COMMAND;
     bool running = true;
 
-    World world;
     world.create();
 
     View view;
     view.init();
+    resize();
 
     Game::version();
 
     while(running) {
         switch(state) {
             case STATE::COMMAND:
-                state = view.handleTopLevelInput();
+                state = view.handleTopLevelInput(this);
                 break;
             case STATE::QUIT:
                 running = false;
@@ -69,7 +71,7 @@ int Game::run(const char *name, const char *version) {
                 state = error();
                 break;
         }
-        view.draw();
+        view.draw(world, player);
     }
 
     view.pause();
@@ -92,55 +94,38 @@ STATE Game::error() {
 }
 
 STATE Game::move_left() {
-    World world;
-
     return _impl.move( world.playerRow(), world.playerCol() - 1 );
 }
 
 STATE Game::move_down() {
-    World world;
-
     return _impl.move( world.playerRow() + 1, world.playerCol() );
 }
 
 STATE Game::move_up() {
-    World world;
-
     return _impl.move( world.playerRow() - 1, world.playerCol() );
 }
 
 STATE Game::move_right() {
-    World world;
-
     return _impl.move( world.playerRow(), world.playerCol() + 1 );
 }
 
 STATE Game::move_upleft() {
-    World world;
-
     return _impl.move( world.playerRow() - 1, world.playerCol() - 1 );
 }
 
 STATE Game::move_upright() {
-    World world;
-
     return _impl.move( world.playerRow() - 1, world.playerCol() + 1 );
 }
 
 STATE Game::move_downleft() {
-    World world;
-
     return _impl.move( world.playerRow() + 1, world.playerCol() - 1 );
 }
 
 STATE Game::move_downright() {
-    World world;
-
     return _impl.move( world.playerRow() + 1, world.playerCol() + 1 );
 }
 
 STATE Game::open() {
-
     return _impl.directed("open", &GameImpl::open);
 }
 
@@ -172,6 +157,7 @@ STATE Game::refresh() {
 STATE Game::resize() {
     View view;
     view.resize();
+    view.draw(world, player);
 
     return STATE::COMMAND;
 }
@@ -201,7 +187,6 @@ STATE Game::version() {
 
 STATE Game::GameImpl::close(int row, int col) {
     View view;
-    World world;
 
     view.message("");
 
@@ -219,7 +204,6 @@ STATE Game::GameImpl::close(int row, int col) {
 
 STATE Game::GameImpl::fight(int row, int col) {
     View view;
-    World world;
 
     Monster* monster = dynamic_cast<Monster*>(world.itemAt(row, col));
 
@@ -261,7 +245,6 @@ STATE Game::GameImpl::fight(int row, int col) {
 
 STATE Game::GameImpl::move(int row, int col) {
     View view;
-    World world;
 
     if (row < 0
         || row >= world.height()
@@ -305,7 +288,6 @@ STATE Game::GameImpl::move(int row, int col) {
 
 STATE Game::GameImpl::open(int row, int col) {
     View view;
-    World world;
 
     view.message("");
 
@@ -324,7 +306,6 @@ STATE Game::GameImpl::open(int row, int col) {
 
 STATE Game::GameImpl::take(int row, int col) {
     View view;
-    World world;
 
     view.message("");
 
@@ -385,7 +366,6 @@ STATE Game::GameImpl::take(int row, int col) {
 STATE Game::GameImpl::directed(string command,
     function<STATE(GameImpl&, int, int)> func) {
     View view;
-    World world;
 
     stringstream prompt;
     prompt << command << " in which direction?";

@@ -3,10 +3,7 @@
 
 using namespace std;
 
-#include "player.h"
 #include "treasure.h"
-
-extern Player player;
 
 struct Treasure::TreasureImpl {
     TreasureImpl();

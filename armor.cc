@@ -4,10 +4,7 @@
 using namespace std;
 
 #include "armor.h"
-#include "player.h"
 #include "view.h"
-
-extern Player player;
 
 Armor::Armor(string article, string name, ITEMTYPE type,
     int offenseBonus, int defenseBonus) :

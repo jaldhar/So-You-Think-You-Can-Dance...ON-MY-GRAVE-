@@ -12,16 +12,11 @@ using namespace std;
 
 #include <curses.h>
 #include "door.h"
-#include "game.h"
 #include "monster.h"
-#include "player.h"
 #include "terrain.h"
 #include "view.h"
-#include "world.h"
 
-extern Player player;
-
-typedef map<int, function<STATE(Game&)>> COMMANDMAP;
+typedef map<int, function<STATE(Game*)>> COMMANDMAP;
 typedef map<int, DIRECTION> DIRECTIONMAP;
 typedef map<ITEMTYPE, TERRAIN> ITEMMAP;
 typedef map<TERRAIN, chtype> TILEMAP;
@@ -33,11 +28,11 @@ struct View::ViewImpl {
     ViewImpl()=default;
     ~ViewImpl()=default;
 
-    void    drawActors(int top, int left);
-    void    drawItems(int top, int left);
+    void    drawActors(World& world, int top, int left);
+    void    drawItems(World& world, int top, int left);
     void    drawMessage();
-    void    drawStatus();
-    void    drawViewport();
+    void    drawStatus(Player& player);
+    void    drawViewport(World& world);
     void    setMessageWin(WINDOW*& win);
     void    setStatusWin(WINDOW*& win);
 
@@ -64,11 +59,11 @@ void View::alert() {
     beep();
 }
 
-void View::draw() {
+void View::draw(World& world, Player& player) {
     curs_set(0);
     wclear(stdscr);
-    _impl.drawViewport();
-    _impl.drawStatus();
+    _impl.drawViewport(world);
+    _impl.drawStatus(player);
     _impl.drawMessage();
     doupdate();
 }
@@ -91,12 +86,11 @@ DIRECTION View::handleDirectionInput() {
     return DIRECTION::NO_DIRECTION;
 }
 
-STATE View::handleTopLevelInput() {
+STATE View::handleTopLevelInput(Game* game) {
     int c = getch();
 
     auto it = _impl._commandkeys.find(c);
     if (it != _impl._commandkeys.end()) {
-        Game game;
         return (it->second)(game);
     }
 
@@ -226,8 +220,6 @@ void View::init() {
     _impl._itemmap[ITEMTYPE::AXE]       = TERRAIN::WEAPON;
     _impl._itemmap[ITEMTYPE::CHAINMAIL] = TERRAIN::ARMOR;
     _impl._itemmap[ITEMTYPE::PLATEMAIL] = TERRAIN::ARMOR;
-
-    resize();
 }
 
 void View::message(const char *msg) {
@@ -271,8 +263,6 @@ void View::resize() {
 
     wresize(_impl._status, 1, _impl._cols);
     wbkgd(_impl._status, ' ' | COLOR_PAIR(3));
-
-    draw();
 }
 
 void View::shell() {
@@ -298,16 +288,12 @@ int View::ViewImpl::createStatusWin(WINDOW* win, int /* ncols */) {
     return 0;
 }
 
-void View::ViewImpl::drawActors(int top, int left) {
-    World world;
-
+void View::ViewImpl::drawActors(World& world, int top, int left) {
     mvwaddch(_viewport, world.playerRow() - top, world.playerCol() - left,
         _tilemap[TERRAIN::PLAYER] | COLOR_PAIR(5) | A_BOLD);
 }
 
-void View::ViewImpl::drawItems(int top, int left) {
-    World world;
-
+void View::ViewImpl::drawItems(World& world, int top, int left) {
     world.foreach_item([=](int row, int col, unique_ptr<Item>& item) {
         TERRAIN t;
 
@@ -336,7 +322,7 @@ void View::ViewImpl::drawMessage() {
     wnoutrefresh(_message);
 }
 
-void View::ViewImpl::drawStatus() {
+void View::ViewImpl::drawStatus(Player& player) {
     wclear(_status);
     mvwprintw(_status, 0, 1,
         "H: %2d    P: %2d    T: %2d    %s/%s/%s",
@@ -349,20 +335,19 @@ void View::ViewImpl::drawStatus() {
     wnoutrefresh(_status);
 }
 
-void View::ViewImpl::drawViewport() {
+void View::ViewImpl::drawViewport(World& world) {
     int screenHeight, screenWidth;
     getmaxyx(_viewport, screenHeight, screenWidth);
 
     wbkgd(_viewport, _tilemap[TERRAIN::EMPTY]);
 
-    World world;
     int playerCol = world.playerCol();
     int playerRow = world.playerRow();
     int worldHeight = world.height();
     int worldWidth  = world.width();
 
-    int left = playerCol - (screenWidth + 1) / 2;
     int top = playerRow - (screenHeight + 1) / 2;
+    int left = playerCol - (screenWidth + 1) / 2;
 
     for (int row = 0; row < screenHeight; row += TILEHEIGHT) {
         int mapRow = row + top;
@@ -396,9 +381,9 @@ void View::ViewImpl::drawViewport() {
         }
     }
 
-    drawItems(top, left);
+    drawItems(world, top, left);
 
-    drawActors(top, left);
+    drawActors(world, top, left);
 
     wnoutrefresh(_viewport);
 }

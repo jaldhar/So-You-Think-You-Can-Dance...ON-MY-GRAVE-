@@ -3,11 +3,8 @@
 
 using namespace std;
 
-#include "player.h"
 #include "shield.h"
 #include "view.h"
-
-extern Player player;
 
 Shield::Shield(string article, string name, ITEMTYPE type,
     int offenseBonus, int defenseBonus) :

@@ -6,16 +6,19 @@
 
 #include <string>
 #include "direction.h"
+#include "game.h"
+#include "player.h"
 #include "state.h"
+#include "world.h"
 
 class View {
 public:
     View();
     ~View();
     void  alert();
-    void  draw();
+    void  draw(World& world, Player& player);
     void  end();
-    STATE handleTopLevelInput();
+    STATE handleTopLevelInput(Game* game);
     DIRECTION handleDirectionInput();
     void  init();
     void  message(const char *msg);
