@@ -39,8 +39,8 @@ struct World::WorldImpl {
     void makeTwistyCorridor(int ax, int ay, int bx, int by);
     void makeVerticalCorridor(int row1, int row2, int col);
     void addDoors();
-    void addItem();
-    void placeItem(Item* item);
+    void addItem(int top, int left, int height, int width);
+    Item* createItem();
     void placePlayer();
     void addRooms(int sectorRows, int sectorCols);
     void fillRoom(ROOMPTR& r);
@@ -51,7 +51,6 @@ struct World::WorldImpl {
     int                                         _playerRow;
     int                                         _playerCol;
     map<pair<int, int>, ITEMPTR>                _items;
-    array<int, 6>                               _potions;
 } World::_impl;
 
 
@@ -78,7 +77,7 @@ void World::create() {
     // Add corridors
     _impl.addCorridors();
 
-    // Now add the rooms. This goes after addCorridors() to prevent collisions.
+    // Now fill the rooms. This goes after addCorridors() to prevent collisions.
     for(auto & r : _impl._rooms) {
         _impl.fillRoom(r);
     }
@@ -88,12 +87,6 @@ void World::create() {
 
     // Add Doors
     _impl.addDoors();
-
-    _impl._potions = {{ 1, 3, 1, 1, 6, 1 }};
-
-    for (int i = 0; i < 100; i++) {
-       _impl.addItem();
-    }
 
     _impl.placePlayer();
 }
@@ -179,6 +172,9 @@ void World::WorldImpl::makeHorizontalCorridor(int row, int col1, int col2) {
         auto & t = _map[row][i];
         t->setPassable(true);
         t->setTerrain(TERRAIN::CORRIDOR);
+    }
+    if (rand() % 10) { // 10% chance of an item in the corridor
+       _impl.addItem(row, col1, 1, col2 - col1 + 1);
     }
 }
 
@@ -284,6 +280,9 @@ void World::WorldImpl::makeVerticalCorridor(int row1, int row2, int col) {
         t->setPassable(true);
         t->setTerrain(TERRAIN::CORRIDOR);
     }
+    if (rand() % 10) { // 10% chance of an item in the corridor
+       _impl.addItem(row1, col, row2 - row1 + 1, 1);
+    }
 }
 
 void World::WorldImpl::addDoors() {
@@ -316,87 +315,102 @@ void World::WorldImpl::addDoors() {
     }
 }
 
-void World::WorldImpl::addItem() {
+void World::WorldImpl::addItem(int top, int left, int height,
+    int width) {
+    int row, col;
+
+    Item* item = createItem();
+    if (item == nullptr) {
+        return;
+    }
+
+    do {
+        row = top;
+        if (height > 1) {
+            row += rand() % height;
+        }
+        col = left;
+        if (width > 1) {
+            col += rand() % width;
+        }
+    } while (!_map[row][col]->passable() ||
+        _items.find(make_pair(row, col)) != _items.end());
+
+    _items[make_pair(row, col)] = ITEMPTR(item);
+}
+
+Item* World::WorldImpl::createItem() {
     int r = rand() % 100;
 
     if (r < 50) {
     }
 
     else if (r < 60) {
-        placeItem(new Treasure());
+        return new Treasure();
     }
 
     else if (r < 75) {
+        array<int, 6> potions = {{ 1, 3, 1, 1, 6, 1 }};
         int number = _potions[rand() % 6];
-        placeItem(new Potion(number));
+
+        return new Potion(number);
     }
 
     else if (r < 80) {
         switch(rand() % 6) {
             case 0:
-              placeItem(new Shield("a", "buckler", ITEMTYPE::BUCKLER, 1, 0));
+              return new Shield("a", "buckler", ITEMTYPE::BUCKLER, 1, 0);
               break;
             case 1:
-              placeItem(new Shield("a", "shield", ITEMTYPE::SHIELD, 2, 0));
+              return new Shield("a", "shield", ITEMTYPE::SHIELD, 2, 0);
               break;
             case 2:
-              placeItem(new Weapon("a", "sword", ITEMTYPE::SWORD, 0, 1));
+              return new Weapon("a", "sword", ITEMTYPE::SWORD, 0, 1);
               break;
             case 3:
-              placeItem(new Weapon("an",   "axe", ITEMTYPE::AXE, 0, 2));
+              return new Weapon("an",   "axe", ITEMTYPE::AXE, 0, 2);
               break;
             case 4:
-              placeItem(new Armor("some", "chain mail", ITEMTYPE::CHAINMAIL, 3, 0));
+              return new Armor("some", "chain mail", ITEMTYPE::CHAINMAIL, 3, 0);
               break;
             case 5:
-              placeItem(new Armor("some", "plate mail", ITEMTYPE::PLATEMAIL, 5, 0));
+              return new Armor("some", "plate mail", ITEMTYPE::PLATEMAIL, 5, 0);
               break;
         };
     }
 
     else if (r < 84) {
-        placeItem(new Monster("a", "zombie", ITEMTYPE::ZOMBIE, 1, 1, 0));
+        return new Monster("a", "zombie", ITEMTYPE::ZOMBIE, 1, 1, 0);
     }
 
     else if (r < 88) {
-        placeItem(new Monster("a", "skeleton", ITEMTYPE::SKELETON, 1, 2, 0));
+        return new Monster("a", "skeleton", ITEMTYPE::SKELETON, 1, 2, 0);
     }
 
     else if (r < 91) {
-        placeItem(new Monster("a", "ghoul", ITEMTYPE::GHOUL, 2, 2, 0));
+        return new Monster("a", "ghoul", ITEMTYPE::GHOUL, 2, 2, 0);
     }
     else if (r < 94) {
-        placeItem(new Monster("a", "wight", ITEMTYPE::WIGHT, 2, 3, 0));
+        return new Monster("a", "wight", ITEMTYPE::WIGHT, 2, 3, 0);
     }
 
     else if (r < 96) {
-        placeItem(new Monster("a", "vampire", ITEMTYPE::VAMPIRE, 3, 3, 0));
+        return new Monster("a", "vampire", ITEMTYPE::VAMPIRE, 3, 3, 0);
     }
 
     else if (r < 98) {
-        placeItem(new Monster("an", "imp", ITEMTYPE::IMP, 3, 4, 3));
+        return new Monster("an", "imp", ITEMTYPE::IMP, 3, 4, 3);
     }
 
     else if (r < 99) {
-        placeItem(new Monster("a", "demon", ITEMTYPE::DEMON, 5, 5, 5));
+        return new Monster("a", "demon", ITEMTYPE::DEMON, 5, 5, 5);
     }
 
     else {
-        placeItem(new Monster("a", "fiend", ITEMTYPE::FIEND, 10, 5, 5));
+        return new Monster("a", "fiend", ITEMTYPE::FIEND, 10, 5, 5);
     }
 //    _monsters["Pharaz"]   = Monster('P', "Pharaz",   "the dread lich", 10,10,9);
-}
-
-void World::WorldImpl::placeItem(Item* item) {
-    int row, col;
-
-    do {
-        row = rand() % MAP_HEIGHT;
-        col = rand() % MAP_WIDTH;
-    } while (!_map[row][col]->passable() ||
-        _items.find(make_pair(row, col)) != _items.end());
-
-    _items[make_pair(row, col)] = ITEMPTR(item);
+    return nullptr;
 }
 
 // Position player on a passable tile which doesn't already have an item or
@@ -443,6 +457,12 @@ void World::WorldImpl::fillRoom(ROOMPTR& r) {
             t->setTerrain(TERRAIN::FLOOR);
         }
     }
+
+    for (int i = 0; i < 10; i++) {
+       _impl.addItem(r->top(), r->left(), r->height(), r->width());
+    }
+
+
 }
 
 void World::WorldImpl::addWalls() {
