@@ -10,7 +10,6 @@ class Room {
 public:
     Room(int yoffset, int xoffset, int height, int width);
     ~Room();
-    void fill();
     int  top() const;
     int  left() const;
     int  height() const;

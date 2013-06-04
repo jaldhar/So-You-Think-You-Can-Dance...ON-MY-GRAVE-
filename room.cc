@@ -4,7 +4,6 @@
 using namespace std;
 
 #include "room.h"
-#include "world.h"
 
 struct Room::RoomImpl {
     RoomImpl(int yoffset, int xoffset, int height, int width);
@@ -23,17 +22,6 @@ Room::Room(int yoffset, int xoffset, int height, int width) :
 }
 
 Room::~Room()=default;
-
-void Room::fill() {
-    World world;
-    for (int row = _impl->_top; row < _impl->_top + _impl->_height; row++) {
-        for (int col = _impl->_left; col < _impl->_left + _impl->_width; col++) {
-            Tile* t = world.tileAt(row, col);
-            t->setPassable(true);
-            t->setTerrain(TERRAIN::FLOOR);
-        }
-    }
-}
 
 int Room::top() const {
     return _impl->_top;

@@ -43,6 +43,7 @@ struct World::WorldImpl {
     void placeItem(Item* item);
     void placePlayer();
     void addRooms(int sectorRows, int sectorCols);
+    void fillRoom(ROOMPTR& r);
     void addWalls();
 
     array<array<TILEPTR, MAP_WIDTH>,MAP_HEIGHT> _map;
@@ -79,7 +80,7 @@ void World::create() {
 
     // Now add the rooms. This goes after addCorridors() to prevent collisions.
     for(auto & r : _impl._rooms) {
-        r->fill();
+        _impl.fillRoom(r);
     }
 
     // Add walls.
@@ -434,6 +435,16 @@ void World::WorldImpl::addRooms(int sectorRows, int sectorCols) {
     }
 }
 
+void World::WorldImpl::fillRoom(ROOMPTR& r) {
+    for (int row = r->top(); row < r->top() + r->height(); row++) {
+        for (int col = r->left(); col < r->left() + r->width(); col++) {
+            auto & t = _map[row][col];
+            t->setPassable(true);
+            t->setTerrain(TERRAIN::FLOOR);
+        }
+    }
+}
+
 void World::WorldImpl::addWalls() {
    //First pass puts a center wall adjacent to any floor or corridor.
     for (int row = 0; row < MAP_HEIGHT; row++) {
@@ -565,4 +576,3 @@ void World::WorldImpl::addWalls() {
         }
     }
 }
-
