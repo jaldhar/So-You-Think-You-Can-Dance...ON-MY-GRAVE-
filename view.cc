@@ -294,7 +294,7 @@ void View::ViewImpl::drawActors(World& world, int top, int left) {
 }
 
 void View::ViewImpl::drawItems(World& world, int top, int left) {
-    world.foreach_item([=](int row, int col, unique_ptr<Item>& item) {
+    world.foreach_item([=](int row, int col, ITEMPTR& item) {
         TERRAIN t;
 
         switch(item->type()) {

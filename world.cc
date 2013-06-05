@@ -21,7 +21,6 @@ using namespace std;
 #include "weapon.h"
 #include "world.h"
 
-typedef unique_ptr<Item>    ITEMPTR;
 typedef unique_ptr<Room>    ROOMPTR;
 typedef unique_ptr<Tile>    TILEPTR;
 
@@ -115,7 +114,7 @@ void World::setPlayerCol(int col) {
     _impl._playerCol = col;
 }
 
-void  World::foreach_item(function<void(int, int, unique_ptr<Item>&)> callback) {
+void  World::foreach_item(function<void(int, int, ITEMPTR&)> callback) {
     for(auto & i : _impl._items) {
 
         callback(i.first.first, i.first.second, i.second);

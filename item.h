@@ -25,4 +25,6 @@ private:
    std::unique_ptr<ItemImpl> _impl;
 };
 
+typedef std::unique_ptr<Item> ITEMPTR;
+
 #endif
