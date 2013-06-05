@@ -351,7 +351,7 @@ Item* World::WorldImpl::createItem() {
 
     else if (r < 75) {
         array<int, 6> potions = {{ 1, 3, 1, 1, 6, 1 }};
-        int number = _potions[rand() % 6];
+        int number = potions[rand() % 6];
 
         return new Potion(number);
     }
