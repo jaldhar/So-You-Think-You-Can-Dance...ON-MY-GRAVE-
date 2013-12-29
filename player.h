@@ -15,16 +15,16 @@ class Player : public Combat {
 public:
     Player();
     virtual ~Player();
-    std::unique_ptr<Armor>&   armor() const;
-    void                      setArmor(Armor* armor);
-    int                       potions() const;
-    void                      setPotions(int potions);
-    std::unique_ptr<Shield>&  shield() const;
-    void                      setShield(Shield* shield);
-    int                       treasure() const;
-    void                      setTreasure(int amount);
-    std::unique_ptr<Weapon>&  weapon() const;
-    void                      setWeapon(Weapon* weapon);
+    Armor*                   armor() const;
+    void                     setArmor(Armor* armor);
+    int                      potions() const;
+    void                     setPotions(int potions);
+    Shield*                  shield() const;
+    void                     setShield(Shield* shield);
+    int                      treasure() const;
+    void                     setTreasure(int amount);
+    Weapon*                  weapon() const;
+    void                     setWeapon(Weapon* weapon);
 
 private:
     struct PlayerImpl;

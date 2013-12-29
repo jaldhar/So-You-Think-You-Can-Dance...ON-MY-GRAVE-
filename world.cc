@@ -130,17 +130,21 @@ Item* World::itemAt(int row, int col) const {
     return item->second.get();
 }
 
-Item* World::removeItem(int row, int col) {
+bool World::removeItem(int row, int col, bool destroy) {
     auto item = _impl._items.find(make_pair(row, col));
 
     if (item == _impl._items.end()) {
-        return nullptr;
+        return false;
     }
 
-    Item* temp = item->second.release();
+    if (destroy) {
+        delete item->second.release();
+    } else {
+        item->second.release();
+    }
     _impl._items.erase(item);
 
-    return temp;
+    return true;
 }
 
 Tile* World::tileAt(int row, int col) const {

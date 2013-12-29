@@ -235,7 +235,7 @@ STATE Game::GameImpl::fight(int row, int col) {
         world.setPlayerRow(row);
         world.setPlayerCol(col);
         output << "You kill the "  << monster->name() << ".";
-        delete world.removeItem(row, col);
+        world.removeItem(row, col, true);
     }
 
     view.message(output.str().c_str());
@@ -309,21 +309,21 @@ STATE Game::GameImpl::take(int row, int col) {
 
     view.message("");
 
-    Item* item = world.removeItem(row, col);
+    Item* item = world.itemAt(row, col);
 
     if (item == nullptr) {
-        view.message("Nothing to get here.");
+        view.message("Nothing to take here.");
         return STATE::ERROR;
     }
 
     if (Potion* p = dynamic_cast<Potion*>(item)) {
         player.setPotions(p->number());
-        delete item;
+        world.removeItem(row, col, true);
     }
 
     else if (Treasure* t = dynamic_cast<Treasure*>(item)) {
         player.setTreasure(t->amount());
-        delete item;
+        world.removeItem(row, col, true);
     }
 
     else if (Armor* a = dynamic_cast<Armor*>(item)) {
@@ -334,7 +334,7 @@ STATE Game::GameImpl::take(int row, int col) {
         player.setArmor(a);
         player.setDefense(a->defenseBonus());
         player.setOffense(a->offenseBonus());
-
+        world.removeItem(row, col);
     }
 
     else if (Shield* s = dynamic_cast<Shield*>(item)) {
@@ -345,7 +345,7 @@ STATE Game::GameImpl::take(int row, int col) {
         player.setShield(s);
         player.setDefense(s->defenseBonus());
         player.setOffense(s->offenseBonus());
-
+        world.removeItem(row, col);
     }
 
     else if (Weapon* w = dynamic_cast<Weapon*>(item)) {
@@ -356,6 +356,7 @@ STATE Game::GameImpl::take(int row, int col) {
         player.setWeapon(w);
         player.setDefense(w->defenseBonus());
         player.setOffense(w->offenseBonus());
+        world.removeItem(row, col);
     }
 
     world.setPlayerRow(row);

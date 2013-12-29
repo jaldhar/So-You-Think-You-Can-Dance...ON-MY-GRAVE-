@@ -22,7 +22,7 @@ public:
     void     setPlayerCol(int col);
     void     foreach_item(std::function<void(int, int, std::unique_ptr<Item>&)> callback);
     Item*    itemAt(int row, int col) const;
-    Item*     removeItem(int row, int col);
+    bool     removeItem(int row, int col, bool destroy = false);
     Tile*    tileAt(int row, int col) const;
 private:
     struct WorldImpl;
