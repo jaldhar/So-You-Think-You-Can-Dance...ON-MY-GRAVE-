@@ -134,7 +134,7 @@ void View::init() {
     _impl._commandkeys['q']               = &Game::quaff;
     _impl._commandkeys['Q']               = &Game::quit;
     _impl._commandkeys['!']               = &Game::shell;
-    _impl._commandkeys['g']               = &Game::take;
+    _impl._commandkeys[',']               = &Game::take;
     _impl._commandkeys['v']               = &Game::version;
 
     _impl._directionkeys['h']             = DIRECTION::WEST;

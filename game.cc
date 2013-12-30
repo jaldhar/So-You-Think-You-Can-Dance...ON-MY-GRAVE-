@@ -34,7 +34,7 @@ struct Game::GameImpl {
     STATE move(int row, int col);
     STATE directedOpen(int row, int col);
     STATE open(Door*& door);
-    STATE directedTake(int row, int col);
+    STATE takeHere(int row, int col);
     STATE take(int row, int col, Item*& item);
 
     string _name;
@@ -165,10 +165,8 @@ STATE Game::shell() {
     return STATE::COMMAND;
 }
 
-// The actual keybinding is 'g' for get but we use take to avoid confusion with
-// std::unique_ptr::get
 STATE Game::take() {
-    return _impl.directed("get item", &GameImpl::directedTake);
+    return _impl.takeHere(world.playerRow(), world.playerCol());
 }
 
 STATE Game::version() {
@@ -304,7 +302,7 @@ STATE Game::GameImpl::open(Door*& door) {
     return STATE::COMMAND;
 }
 
-STATE Game::GameImpl::directedTake(int row, int col) {
+STATE Game::GameImpl::takeHere(int row, int col) {
     view.message("");
 
     Item* item = world.itemAt(row, col);
