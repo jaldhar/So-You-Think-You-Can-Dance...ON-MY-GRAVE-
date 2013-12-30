@@ -22,7 +22,7 @@ using namespace std;
 #include "world.h"
 
 static Player player;
-
+static View view;
 static World world;
 
 struct Game::GameImpl {
@@ -52,7 +52,6 @@ int Game::run(const char *name, const char *version) {
 
     world.create();
 
-    View view;
     view.init();
     resize();
 
@@ -86,8 +85,6 @@ STATE Game::close() {
 }
 
 STATE Game::error() {
-    View view;
-
     view.alert();
 
     return STATE::COMMAND;
@@ -130,8 +127,6 @@ STATE Game::open() {
 }
 
 STATE Game::quaff() {
-    View view;
-
     if (player.potions() < 1) {
         view.message("You have no potions.");
         return STATE::ERROR;
@@ -148,14 +143,12 @@ STATE Game::quit() {
 }
 
 STATE Game::refresh() {
-    View view;
     view.refresh();
 
     return STATE::COMMAND;
 }
 
 STATE Game::resize() {
-    View view;
     view.resize();
     view.draw(world, player);
 
@@ -163,7 +156,6 @@ STATE Game::resize() {
 }
 
 STATE Game::shell() {
-    View view;
     view.shell();
 
     return STATE::COMMAND;
@@ -176,7 +168,6 @@ STATE Game::take() {
 }
 
 STATE Game::version() {
-    View view;
     stringstream banner;
 
     banner <<  _impl._name << ' ' << _impl._version;
@@ -186,8 +177,6 @@ STATE Game::version() {
 }
 
 STATE Game::GameImpl::close(int row, int col) {
-    View view;
-
     view.message("");
 
     if (Door* d = dynamic_cast<Door*>(world.itemAt(row, col))) {
@@ -203,8 +192,6 @@ STATE Game::GameImpl::close(int row, int col) {
 }
 
 STATE Game::GameImpl::fight(int row, int col) {
-    View view;
-
     Monster* monster = dynamic_cast<Monster*>(world.itemAt(row, col));
 
     stringstream output;
@@ -244,8 +231,6 @@ STATE Game::GameImpl::fight(int row, int col) {
 }
 
 STATE Game::GameImpl::move(int row, int col) {
-    View view;
-
     if (row < 0
         || row >= world.height()
         || col < 0
@@ -272,11 +257,11 @@ STATE Game::GameImpl::move(int row, int col) {
     }
 
     else if (dynamic_cast<Monster*>(item)) {
-        return _impl.fight(row, col);
+        return fight(row, col);
     }
 
     else if (item != nullptr) {
-        return _impl.take(row, col);
+        return take(row, col);
     }
 
     world.setPlayerRow(row);
@@ -287,8 +272,6 @@ STATE Game::GameImpl::move(int row, int col) {
 }
 
 STATE Game::GameImpl::open(int row, int col) {
-    View view;
-
     view.message("");
 
     if (Door* d = dynamic_cast<Door*>(world.itemAt(row, col))) {
@@ -305,8 +288,6 @@ STATE Game::GameImpl::open(int row, int col) {
 }
 
 STATE Game::GameImpl::take(int row, int col) {
-    View view;
-
     view.message("");
 
     Item* item = world.itemAt(row, col);
@@ -366,7 +347,6 @@ STATE Game::GameImpl::take(int row, int col) {
 
 STATE Game::GameImpl::directed(string command,
     function<STATE(GameImpl&, int, int)> func) {
-    View view;
 
     stringstream prompt;
     prompt << command << " in which direction?";
