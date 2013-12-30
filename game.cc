@@ -27,11 +27,15 @@ static World world;
 
 struct Game::GameImpl {
     STATE directed(string command, function<STATE(GameImpl&, int, int)> func);
-    STATE close(int row, int col);
-    STATE fight(int row, int col);
+    STATE directedClose(int row, int col);
+    STATE close(Door*& door);
+    STATE directedFight(int row, int col);
+    STATE fight(int row, int col, Monster*& monster);
     STATE move(int row, int col);
-    STATE open(int row, int col);
-    STATE take(int row, int col);
+    STATE directedOpen(int row, int col);
+    STATE open(Door*& door);
+    STATE directedTake(int row, int col);
+    STATE take(int row, int col, Item*& item);
 
     string _name;
     string _version;
@@ -81,7 +85,7 @@ int Game::run(const char *name, const char *version) {
 }
 
 STATE Game::close() {
-    return _impl.directed("close", &GameImpl::close);
+    return _impl.directed("close", &GameImpl::directedClose);
 }
 
 STATE Game::error() {
@@ -123,7 +127,7 @@ STATE Game::move_downright() {
 }
 
 STATE Game::open() {
-    return _impl.directed("open", &GameImpl::open);
+    return _impl.directed("open", &GameImpl::directedOpen);
 }
 
 STATE Game::quaff() {
@@ -164,7 +168,7 @@ STATE Game::shell() {
 // The actual keybinding is 'g' for get but we use take to avoid confusion with
 // std::unique_ptr::get
 STATE Game::take() {
-    return _impl.directed("get item", &GameImpl::take);
+    return _impl.directed("get item", &GameImpl::directedTake);
 }
 
 STATE Game::version() {
@@ -176,24 +180,32 @@ STATE Game::version() {
     return STATE::COMMAND;
 }
 
-STATE Game::GameImpl::close(int row, int col) {
-    view.message("");
-
-    if (Door* d = dynamic_cast<Door*>(world.itemAt(row, col))) {
-        if (d->open() == false) {
-            view.message("The door is already closed.");
-        } else {
-            d->setOpen(false);
-        }
-        return STATE::COMMAND;
+STATE Game::GameImpl::directedClose(int row, int col) {
+    if (Door* door = dynamic_cast<Door*>(world.itemAt(row, col))) {
+        return close(door);
     }
     view.message("Nothing to close here.");
     return STATE::ERROR;
 }
 
-STATE Game::GameImpl::fight(int row, int col) {
-    Monster* monster = dynamic_cast<Monster*>(world.itemAt(row, col));
+STATE Game::GameImpl::close(Door*& door) {
+    view.message("");
 
+    if (door->open() == false) {
+        view.message("The door is already closed.");
+        return STATE::ERROR;
+    } else {
+        door->setOpen(false);
+    }
+    return STATE::COMMAND;
+}
+
+STATE Game::GameImpl::directedFight(int row, int col) {
+    Monster* monster = dynamic_cast<Monster*>(world.itemAt(row, col));
+    return fight(row, col, monster);
+}
+
+STATE Game::GameImpl::fight(int row, int col, Monster*& monster) {
     stringstream output;
 
     int damage = monster->attack();
@@ -247,21 +259,22 @@ STATE Game::GameImpl::move(int row, int col) {
         return STATE::COMMAND;
     }
 
-    Item *item = world.itemAt(row, col);
+    if (Item *item = world.itemAt(row, col)) {
 
-    if (Door* d = dynamic_cast<Door*>(item)) {
-        if (d->open() == false) {
-            view.message("The door is shut.");
-            return STATE::ERROR;
+        if (Door* d = dynamic_cast<Door*>(item)) {
+            if (d->open() == false) {
+                view.message("The door is shut.");
+                return STATE::ERROR;
+            }
         }
-    }
 
-    else if (dynamic_cast<Monster*>(item)) {
-        return fight(row, col);
-    }
+        else if (Monster* monster = dynamic_cast<Monster*>(item)) {
+            return fight(row, col, monster);
+        }
 
-    else if (item != nullptr) {
-        return take(row, col);
+        else {
+            return take(row, col, item);
+        }
     }
 
     world.setPlayerRow(row);
@@ -271,40 +284,45 @@ STATE Game::GameImpl::move(int row, int col) {
     return STATE::COMMAND;
 }
 
-STATE Game::GameImpl::open(int row, int col) {
-    view.message("");
-
-    if (Door* d = dynamic_cast<Door*>(world.itemAt(row, col))) {
-        if (d->open() == false) {
-            d->setOpen(true);
-        } else {
-            view.message("The door is already open.");
-        }
-        return STATE::COMMAND;
+STATE Game::GameImpl::directedOpen(int row, int col) {
+    if (Door* door = dynamic_cast<Door*>(world.itemAt(row, col))) {
+        return open(door);
     }
-
     view.message("Nothing to open here.");
     return STATE::ERROR;
 }
 
-STATE Game::GameImpl::take(int row, int col) {
+STATE Game::GameImpl::open(Door*& door) {
+    view.message("");
+
+    if (door->open() == true) {
+        view.message("The door is already open.");
+        return STATE::ERROR;
+    } else {
+        door->setOpen(true);
+    }
+    return STATE::COMMAND;
+}
+
+STATE Game::GameImpl::directedTake(int row, int col) {
     view.message("");
 
     Item* item = world.itemAt(row, col);
 
-    if (item == nullptr) {
-        view.message("Nothing to take here.");
-        return STATE::ERROR;
+    if (item != nullptr) {
+        return take(row, col, item);
     }
+    view.message("Nothing to take here.");
+    return STATE::ERROR;
+}
 
+STATE Game::GameImpl::take(int row, int col, Item*& item) {
     if (Potion* p = dynamic_cast<Potion*>(item)) {
         player.setPotions(p->number());
-        world.removeItem(row, col, true);
     }
 
     else if (Treasure* t = dynamic_cast<Treasure*>(item)) {
         player.setTreasure(t->amount());
-        world.removeItem(row, col, true);
     }
 
     else if (Armor* a = dynamic_cast<Armor*>(item)) {
@@ -315,7 +333,6 @@ STATE Game::GameImpl::take(int row, int col) {
         player.setArmor(a);
         player.setDefense(a->defenseBonus());
         player.setOffense(a->offenseBonus());
-        world.removeItem(row, col);
     }
 
     else if (Shield* s = dynamic_cast<Shield*>(item)) {
@@ -326,7 +343,6 @@ STATE Game::GameImpl::take(int row, int col) {
         player.setShield(s);
         player.setDefense(s->defenseBonus());
         player.setOffense(s->offenseBonus());
-        world.removeItem(row, col);
     }
 
     else if (Weapon* w = dynamic_cast<Weapon*>(item)) {
@@ -337,9 +353,14 @@ STATE Game::GameImpl::take(int row, int col) {
         player.setWeapon(w);
         player.setDefense(w->defenseBonus());
         player.setOffense(w->offenseBonus());
-        world.removeItem(row, col);
     }
 
+    else {
+        view.message("You can't take that!");
+        return STATE::ERROR;
+    }
+
+    world.removeItem(row, col);
     world.setPlayerRow(row);
     world.setPlayerCol(col);
     return STATE::COMMAND;
