@@ -1,6 +1,8 @@
 // View -- S.Y.T.Y.C.D...O.M.G? display (implementation)
 //
 
+#define _XOPEN_SOURCE 500
+
 #include <cctype>
 #include <clocale>
 #include <cstdlib>
@@ -11,6 +13,15 @@
 using namespace std;
 
 #include <curses.h>
+// These ncurses macros name clash with c++ symbols on old versions of ncurses
+#if NCURSES_MAJOR_VERSION < 5 || (NCURSES_MAJOR_VERSION == 5 && NCURSES_MINOR_VERSION < 9)
+#undef box
+#undef clear
+#undef erase
+#undef move
+#undef refresh
+#endif
+
 #include "door.h"
 #include "monster.h"
 #include "terrain.h"
