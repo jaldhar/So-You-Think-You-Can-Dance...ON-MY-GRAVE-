@@ -44,6 +44,7 @@ struct World::WorldImpl {
     void addRooms(int sectorRows, int sectorCols);
     void fillRoom(ROOMPTR& r);
     void addWalls();
+    void specializeWalls();
 
     array<array<TILEPTR, MAP_WIDTH>,MAP_HEIGHT> _map;
     vector<ROOMPTR>                             _rooms;
@@ -81,11 +82,14 @@ void World::create() {
         _impl.fillRoom(r);
     }
 
-    // Add walls.
+    // Add basic walls.
     _impl.addWalls();
 
     // Add Doors
     _impl.addDoors();
+
+    // Add better looking wall types.
+    _impl.specializeWalls();
 
     _impl.placePlayer();
 }
@@ -469,7 +473,7 @@ void World::WorldImpl::fillRoom(ROOMPTR& r) {
 }
 
 void World::WorldImpl::addWalls() {
-   //First pass puts a center wall adjacent to any floor or corridor.
+    //First pass puts a center wall adjacent to any floor or corridor.
     for (int row = 0; row < MAP_HEIGHT; row++) {
         for (int col = 0; col < MAP_WIDTH; col++) {
 
@@ -507,50 +511,27 @@ void World::WorldImpl::addWalls() {
             end: ;
         }
     }
+}
+
+void World::WorldImpl::specializeWalls() {
 
     // Second pass makes specific wall types as needed.
     map<string, TERRAIN> walls = {
-        {"00000000", TERRAIN::C_WALL},
-        {"00000010", TERRAIN::V_WALL},
-        {"00001000", TERRAIN::H_WALL},
-        {"00001010", TERRAIN::UL_WALL},
+        {"01011000", TERRAIN::BT_WALL},
+        {"01010010", TERRAIN::RT_WALL},
+        {"01010000", TERRAIN::LR_WALL},
+        {"01001010", TERRAIN::LT_WALL},
+        {"01001000", TERRAIN::LL_WALL},
+        {"01000010", TERRAIN::V_WALL},
+        {"01000000", TERRAIN::V_WALL},
+        {"00011010", TERRAIN::TT_WALL},
+        {"00011000", TERRAIN::H_WALL},
         {"00010000", TERRAIN::H_WALL},
         {"00010010", TERRAIN::UR_WALL},
-        {"00011000", TERRAIN::H_WALL},
-        {"00011001", TERRAIN::H_WALL},
-        {"00011010", TERRAIN::TT_WALL},
-        {"00011100", TERRAIN::H_WALL},
-        {"00011101", TERRAIN::H_WALL},
-        {"00111000", TERRAIN::H_WALL},
-        {"00111001", TERRAIN::H_WALL},
-        {"00111100", TERRAIN::H_WALL},
-        {"01000000", TERRAIN::V_WALL},
-        {"01000010", TERRAIN::V_WALL},
-        {"01000011", TERRAIN::V_WALL},
-        {"01000110", TERRAIN::V_WALL},
-        {"01000111", TERRAIN::V_WALL},
-        {"01001000", TERRAIN::LL_WALL},
-        {"01001010", TERRAIN::LT_WALL},
-        {"01010000", TERRAIN::LR_WALL},
-        {"01010010", TERRAIN::RT_WALL},
-        {"01011000", TERRAIN::BT_WALL},
-        {"01011010", TERRAIN::C_WALL},
-        {"01100010", TERRAIN::V_WALL},
-        {"01100011", TERRAIN::V_WALL},
-        {"01100110", TERRAIN::V_WALL},
-        {"10011000", TERRAIN::H_WALL},
-        {"10011001", TERRAIN::H_WALL},
-        {"10011100", TERRAIN::H_WALL},
-        {"10011101", TERRAIN::H_WALL},
-        {"10111000", TERRAIN::H_WALL},
-        {"10111100", TERRAIN::H_WALL},
-        {"11000010", TERRAIN::V_WALL},
-        {"11000011", TERRAIN::V_WALL},
-        {"11000110", TERRAIN::V_WALL},
-        {"11000111", TERRAIN::V_WALL},
-        {"11100010", TERRAIN::V_WALL},
-        {"11100011", TERRAIN::V_WALL},
-        {"11100110", TERRAIN::V_WALL}
+        {"00001010", TERRAIN::UL_WALL},
+        {"00001000", TERRAIN::H_WALL},
+        {"00000010", TERRAIN::V_WALL},
+        {"00000000", TERRAIN::C_WALL},
     };
 
     for (int row = 0; row < MAP_HEIGHT; row++) {
@@ -589,12 +570,11 @@ void World::WorldImpl::addWalls() {
                 }
             }
 
-            string edges = edgeset.to_string();
-            try {
-                t->setTerrain(walls.at(edges));
-            } catch(out_of_range) {
-                // For debugging though we should not reach here.
-                fprintf(stderr, "%d,%d: %s\n", row, col, edges.c_str());
+            for (auto& wall: walls) {
+                bitset<8> mask(wall.first);
+                if ((edgeset & mask) == mask) {
+                    t->setTerrain(wall.second);
+                }
             }
         }
     }
