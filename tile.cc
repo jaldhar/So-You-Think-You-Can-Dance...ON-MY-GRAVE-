@@ -54,12 +54,6 @@ bool Tile::isBlock() {
     _impl->_terrain == TERRAIN::H_DOOR_CLOSED || _impl->_terrain == TERRAIN::V_DOOR_CLOSED);
 }
 
-bool Tile::isDoor() {
-    return (
-    _impl->_terrain == TERRAIN::H_DOOR_OPEN  || _impl->_terrain == TERRAIN::H_DOOR_CLOSED ||
-    _impl->_terrain == TERRAIN::V_DOOR_OPEN  || _impl->_terrain == TERRAIN::V_DOOR_CLOSED);
-}
-
 Tile::TileImpl::TileImpl() {
     _passable = false;
     _terrain = TERRAIN::EMPTY;

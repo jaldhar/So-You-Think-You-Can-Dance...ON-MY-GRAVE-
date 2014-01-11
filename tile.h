@@ -18,7 +18,6 @@ public:
     bool    visible() const;
     void    setVisible(bool v);
     bool    isBlock();
-    bool    isDoor();
 
 private:
     struct TileImpl;
