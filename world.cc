@@ -118,10 +118,16 @@ void World::setPlayerCol(int col) {
     _impl._playerCol = col;
 }
 
-void  World::foreach_item(function<void(int, int, ITEMPTR&)> callback) {
+void  World::foreach_item(int top, int left, int height, int width,
+    function<void(int, int, ITEMPTR&)> callback) {
     for(auto & i : _impl._items) {
-
-        callback(i.first.first, i.first.second, i.second);
+        int row = i.first.first;
+        int col = i.first.second;
+        if (row < top || row > top + height - 1 || col < left ||
+        col > left + width - 1) {
+            continue;
+        }
+        callback(row, col, i.second);
     }
 }
 

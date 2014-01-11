@@ -40,7 +40,7 @@ struct View::ViewImpl {
     ~ViewImpl()=default;
 
     void    drawActors(World& world, int top, int left);
-    void    drawItems(World& world, int top, int left);
+    void    drawItems(World& world, int top, int left, int height, int width);
     void    drawMessage();
     void    drawStatus(Player& player);
     void    drawViewport(World& world);
@@ -304,8 +304,8 @@ void View::ViewImpl::drawActors(World& world, int top, int left) {
         _tilemap[TERRAIN::PLAYER] | COLOR_PAIR(5) | A_BOLD);
 }
 
-void View::ViewImpl::drawItems(World& world, int top, int left) {
-    world.foreach_item([=](int row, int col, ITEMPTR& item) {
+void View::ViewImpl::drawItems(World& world, int top, int left, int height, int width) {
+    world.foreach_item(top, left, height, width, [=](int row, int col, ITEMPTR& item) {
         TERRAIN t;
 
         switch(item->type()) {
@@ -392,7 +392,7 @@ void View::ViewImpl::drawViewport(World& world) {
         }
     }
 
-    drawItems(world, top, left);
+    drawItems(world, top, left, screenHeight, screenWidth);
 
     drawActors(world, top, left);
 

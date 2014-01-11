@@ -20,7 +20,8 @@ public:
     void     setPlayerRow(int row);
     int      playerCol() const;
     void     setPlayerCol(int col);
-    void     foreach_item(std::function<void(int, int, std::unique_ptr<Item>&)> callback);
+    void     foreach_item(int top, int left, int height, int width,
+                std::function<void(int, int, std::unique_ptr<Item>&)> callback);
     Item*    itemAt(int row, int col) const;
     bool     removeItem(int row, int col, bool destroy = false);
     Tile*    tileAt(int row, int col) const;
