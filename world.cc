@@ -572,6 +572,12 @@ void World::WorldImpl::specializeWalls() {
                         edgeset.set(count);
                     }
 
+                    auto item = _items.find(make_pair(y, x));
+                    if (item != _items.end() &&
+                    dynamic_cast<Door*>(item->second.get())) {
+                        edgeset.set(count);
+                    }
+
                     count--;
                 }
             }
