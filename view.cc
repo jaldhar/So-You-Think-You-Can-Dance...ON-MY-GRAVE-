@@ -141,6 +141,7 @@ void View::init() {
     _impl._commandkeys['n']               = &Game::move_downright;
     _impl._commandkeys[KEY_NPAGE]         = &Game::move_downright;
     _impl._commandkeys['c']               = &Game::close;
+    _impl._commandkeys['m']               = &Game::moveover;
     _impl._commandkeys['o']               = &Game::open;
     _impl._commandkeys['q']               = &Game::quaff;
     _impl._commandkeys['Q']               = &Game::quit;

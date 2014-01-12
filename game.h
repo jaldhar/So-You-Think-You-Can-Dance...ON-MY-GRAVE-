@@ -20,6 +20,7 @@ public:
     STATE move_upright();
     STATE move_downleft();
     STATE move_downright();
+    STATE moveover();
     STATE open();
     STATE quaff();
     STATE quit();

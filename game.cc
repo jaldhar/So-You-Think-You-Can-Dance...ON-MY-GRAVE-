@@ -31,7 +31,8 @@ struct Game::GameImpl {
     STATE close(Door*& door);
     STATE directedFight(int row, int col);
     STATE fight(int row, int col, Monster*& monster);
-    STATE move(int row, int col);
+    STATE directedMove(int row, int col);
+    STATE move(int row, int col, bool pickup = true);
     STATE directedOpen(int row, int col);
     STATE open(Door*& door);
     STATE takeHere(int row, int col);
@@ -124,6 +125,10 @@ STATE Game::move_downleft() {
 
 STATE Game::move_downright() {
     return _impl.move( world.playerRow() + 1, world.playerCol() + 1 );
+}
+
+STATE Game::moveover() {
+    return _impl.directed("move over", &GameImpl::directedMove);
 }
 
 STATE Game::open() {
@@ -240,7 +245,11 @@ STATE Game::GameImpl::fight(int row, int col, Monster*& monster) {
     return STATE::COMMAND;
 }
 
-STATE Game::GameImpl::move(int row, int col) {
+STATE Game::GameImpl::directedMove(int row, int col) {
+    return move(row, col, false);
+}
+
+STATE Game::GameImpl::move(int row, int col, bool pickup) {
     if (row < 0
         || row >= world.height()
         || col < 0
@@ -271,7 +280,9 @@ STATE Game::GameImpl::move(int row, int col) {
         }
 
         else {
-            return take(row, col, item);
+            if (pickup) {
+                return take(row, col, item);
+            }
         }
     }
 
