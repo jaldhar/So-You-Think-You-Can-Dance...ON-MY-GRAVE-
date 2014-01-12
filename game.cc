@@ -29,8 +29,10 @@ struct Game::GameImpl {
     STATE directed(string command, function<STATE(GameImpl&, int, int)> func);
     STATE directedClose(int row, int col);
     STATE close(Door*& door);
-    STATE directedFight(int row, int col);
-    STATE fight(int row, int col, Monster*& monster);
+    STATE continuousFight(int row, int col);
+    STATE oneFight(int row, int col);
+    STATE directedFight(int row, int col, bool continuous = true);
+    STATE fightHere(int row, int col, Monster*& monster);
     STATE directedMove(int row, int col);
     STATE move(int row, int col, bool pickup = true);
     STATE directedOpen(int row, int col);
@@ -67,6 +69,9 @@ int Game::run(const char *name, const char *version) {
             case STATE::COMMAND:
                 state = view.handleTopLevelInput(this);
                 break;
+            case STATE::FIGHTING:
+                state = view.handleTopLevelInput(this);
+                break;
             case STATE::QUIT:
                 running = false;
                 break;
@@ -93,6 +98,14 @@ STATE Game::error() {
     view.alert();
 
     return STATE::COMMAND;
+}
+
+STATE Game::fight() {
+    return _impl.directed("fight", &GameImpl::oneFight);
+}
+
+STATE Game::keepFighting() {
+    return _impl.directed("fight to the death", &GameImpl::continuousFight);
 }
 
 STATE Game::move_left() {
@@ -203,12 +216,30 @@ STATE Game::GameImpl::close(Door*& door) {
     return STATE::COMMAND;
 }
 
-STATE Game::GameImpl::directedFight(int row, int col) {
-    Monster* monster = dynamic_cast<Monster*>(world.itemAt(row, col));
-    return fight(row, col, monster);
+STATE Game::GameImpl::continuousFight(int row, int col) {
+    return directedFight(row, col);
 }
 
-STATE Game::GameImpl::fight(int row, int col, Monster*& monster) {
+STATE Game::GameImpl::oneFight(int row, int col) {
+    return directedFight(row, col, false);
+}
+
+STATE Game::GameImpl::directedFight(int row, int col, bool continuous) {
+    if (Monster* monster = dynamic_cast<Monster*>(world.itemAt(row, col))) {
+        STATE result;
+        do {
+            result = fightHere(row, col, monster);
+            if (result != STATE::FIGHTING) {
+                break;
+            }
+        } while (continuous);
+        return result;
+    }
+    view.message("Nothing to fight here.");
+    return STATE::ERROR;
+}
+
+STATE Game::GameImpl::fightHere(int row, int col, Monster*& monster) {
     stringstream output;
 
     int damage = monster->attack();
@@ -233,16 +264,19 @@ STATE Game::GameImpl::fight(int row, int col, Monster*& monster) {
             " damage).  ";
     }
 
+    STATE state = STATE::FIGHTING;
+ 
     if ( monster->health() < 1 ) {
         world.setPlayerRow(row);
         world.setPlayerCol(col);
         output << "You kill the "  << monster->name() << ".";
         world.removeItem(row, col, true);
+        state = STATE::COMMAND;
     }
 
     view.message(output.str().c_str());
 
-    return STATE::COMMAND;
+    return state;
 }
 
 STATE Game::GameImpl::directedMove(int row, int col) {
@@ -276,7 +310,7 @@ STATE Game::GameImpl::move(int row, int col, bool pickup) {
         }
 
         else if (Monster* monster = dynamic_cast<Monster*>(item)) {
-            return fight(row, col, monster);
+            return fightHere(row, col, monster);
         }
 
         else {

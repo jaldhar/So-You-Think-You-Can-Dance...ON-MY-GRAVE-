@@ -12,6 +12,8 @@ public:
     int run(const char *name, const char *version);
     STATE close();
     STATE error();
+    STATE fight();
+    STATE keepFighting();
     STATE move_left();
     STATE move_down();
     STATE move_up();
