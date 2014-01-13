@@ -105,7 +105,7 @@ STATE View::handleTopLevelInput(Game* game) {
         return (it->second)(game);
     }
 
-    return STATE::ERROR;
+    return game->badInput();
 }
 
 void View::init() {
@@ -167,6 +167,7 @@ void View::init() {
     _impl._directionkeys[KEY_END]         = DIRECTION::SOUTHWEST;
     _impl._directionkeys['n']             = DIRECTION::SOUTHEAST;
     _impl._directionkeys[KEY_NPAGE]       = DIRECTION::SOUTHEAST;
+    _impl._directionkeys[0x1b]/* ESCAPE */= DIRECTION::CANCELLED;
 
     ripoffline(1, View::ViewImpl::createMessageWin);
     ripoffline(-1, View::ViewImpl::createStatusWin);

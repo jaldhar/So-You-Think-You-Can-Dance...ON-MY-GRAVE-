@@ -10,6 +10,7 @@ public:
     Game();
     ~Game();
     int run(const char *name, const char *version);
+    STATE badInput();
     STATE close();
     STATE error();
     STATE fight();

@@ -90,6 +90,11 @@ int Game::run(const char *name, const char *version) {
     return EXIT_SUCCESS;
 }
 
+STATE Game::badInput() {
+    view.message("Huh?");
+    return STATE::ERROR;
+}
+
 STATE Game::close() {
     return _impl.directed("close", &GameImpl::directedClose);
 }
@@ -440,6 +445,10 @@ STATE Game::GameImpl::directed(string command,
             break;
         case DIRECTION::SOUTHEAST:
             return func(_impl, world.playerRow() + 1, world.playerCol() + 1 );
+            break;
+        case DIRECTION::CANCELLED:
+            view.message("");
+            return STATE::COMMAND;
             break;
         case DIRECTION::NO_DIRECTION:
         default:
