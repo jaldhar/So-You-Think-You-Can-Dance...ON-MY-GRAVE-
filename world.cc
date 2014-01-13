@@ -523,6 +523,7 @@ void World::WorldImpl::specializeWalls() {
 
     // Second pass makes specific wall types as needed.
     map<string, TERRAIN> walls = {
+        {"01011010", TERRAIN::C_WALL},
         {"01011000", TERRAIN::BT_WALL},
         {"01010010", TERRAIN::RT_WALL},
         {"01010000", TERRAIN::LR_WALL},
