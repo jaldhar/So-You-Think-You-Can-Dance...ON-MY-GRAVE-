@@ -33,8 +33,8 @@ struct Game::GameImpl {
     bool  canMove(int row, int col);
     STATE move();
     STATE open();
-    STATE takeHere(int row, int col);
-    STATE take(int row, int col, Item*& item);
+    STATE take();
+    STATE takeHere(int row, int col, Item*& item);
 
     string _name;
     string _version;
@@ -312,7 +312,7 @@ STATE Game::shell() {
 }
 
 STATE Game::take() {
-    return _impl.takeHere(world.playerRow(), world.playerCol());
+    return _impl.take();
 }
 
 STATE Game::version() {
@@ -433,7 +433,7 @@ STATE Game::GameImpl::move() {
 
         else {
             if (_pickup) {
-                return take(row, col, item);
+                return takeHere(row, col, item);
             }
         }
     }
@@ -463,19 +463,21 @@ STATE Game::GameImpl::open() {
     return STATE::ERROR;
 }
 
-STATE Game::GameImpl::takeHere(int row, int col) {
+STATE Game::GameImpl::take() {
+    int row = world.playerRow();
+    int col = world.playerCol();
     view.message("");
 
     Item* item = world.itemAt(row, col);
 
     if (item != nullptr) {
-        return take(row, col, item);
+        return takeHere(row, col, item);
     }
     view.message("Nothing to take here.");
     return STATE::ERROR;
 }
 
-STATE Game::GameImpl::take(int row, int col, Item*& item) {
+STATE Game::GameImpl::takeHere(int row, int col, Item*& item) {
     if (Potion* p = dynamic_cast<Potion*>(item)) {
         player.setPotions(p->number());
     }
