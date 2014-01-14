@@ -26,7 +26,6 @@ static View view;
 static World world;
 
 struct Game::GameImpl {
-    STATE directed(string command, function<STATE(GameImpl&)> func);
     STATE close();
     STATE fight();
     STATE fightHere(int row, int col, Monster*& monster);
@@ -35,6 +34,7 @@ struct Game::GameImpl {
     STATE open();
     STATE take();
     STATE takeHere(int row, int col, Item*& item);
+    STATE directed(string command, function<STATE(GameImpl&)> func);
 
     string _name;
     string _version;
@@ -342,6 +342,16 @@ STATE Game::GameImpl::close() {
     return STATE::ERROR;
 }
 
+STATE Game::GameImpl::fight() {
+    int row = world.playerRow() + player.facingY();
+    int col = world.playerCol() + player.facingX();
+    if (Monster* monster = dynamic_cast<Monster*>(world.itemAt(row, col))) {
+        return fightHere(row, col, monster);
+    }
+    view.message("Nothing to fight here.");
+    return STATE::ERROR;
+}
+
 STATE Game::GameImpl::fightHere(int row, int col, Monster*& monster) {
     stringstream output;
 
@@ -380,16 +390,6 @@ STATE Game::GameImpl::fightHere(int row, int col, Monster*& monster) {
     view.message(output.str().c_str());
 
     return result;
-}
-
-STATE Game::GameImpl::fight() {
-    int row = world.playerRow() + player.facingY();
-    int col = world.playerCol() + player.facingX();
-    if (Monster* monster = dynamic_cast<Monster*>(world.itemAt(row, col))) {
-        return fightHere(row, col, monster);
-    }
-    view.message("Nothing to fight here.");
-    return STATE::ERROR;
 }
 
 bool Game::GameImpl::canMove(int row, int col) {
