@@ -127,7 +127,7 @@ STATE Game::fight() {
     return _impl.directed("fight", &GameImpl::fight);
 }
 
-STATE Game::keepFighting() {
+STATE Game::fightToDeath() {
     _impl._keepfighting = true;
     return _impl.directed("fight to the death", &GameImpl::fight);
 }
@@ -196,7 +196,7 @@ STATE Game::move_downright() {
     return STATE::MOVING;
 }
 
-STATE Game::keepMoving_left() {
+STATE Game::run_left() {
     player.setFacingY(0);
     player.setFacingX(-1);
     _impl._keepmoving = true;
@@ -204,7 +204,7 @@ STATE Game::keepMoving_left() {
     return STATE::MOVING;
 }
 
-STATE Game::keepMoving_down() {
+STATE Game::run_down() {
     player.setFacingY(1);
     player.setFacingX(0);
     _impl._keepmoving = true;
@@ -212,7 +212,7 @@ STATE Game::keepMoving_down() {
     return STATE::MOVING;
 }
 
-STATE Game::keepMoving_up() {
+STATE Game::run_up() {
     player.setFacingY(-1);
     player.setFacingX(0);
     _impl._keepmoving = true;
@@ -220,7 +220,7 @@ STATE Game::keepMoving_up() {
     return STATE::MOVING;
 }
 
-STATE Game::keepMoving_right() {
+STATE Game::run_right() {
     player.setFacingY(0);
     player.setFacingX(1);
     _impl._keepmoving = true;
@@ -228,7 +228,7 @@ STATE Game::keepMoving_right() {
     return STATE::MOVING;
 }
 
-STATE Game::keepMoving_upleft() {
+STATE Game::run_upleft() {
     player.setFacingY(-1);
     player.setFacingX(-1);
     _impl._keepmoving = true;
@@ -236,7 +236,7 @@ STATE Game::keepMoving_upleft() {
     return STATE::MOVING;
 }
 
-STATE Game::keepMoving_upright() {
+STATE Game::run_upright() {
     player.setFacingY(-1);
     player.setFacingX(1);
     _impl._keepmoving = true;
@@ -244,7 +244,7 @@ STATE Game::keepMoving_upright() {
     return STATE::MOVING;
 }
 
-STATE Game::keepMoving_downleft() {
+STATE Game::run_downleft() {
     player.setFacingY(1);
     player.setFacingX(-1);
     _impl._keepmoving = true;
@@ -252,7 +252,7 @@ STATE Game::keepMoving_downleft() {
     return STATE::MOVING;
 }
 
-STATE Game::keepMoving_downright() {
+STATE Game::run_downright() {
     player.setFacingY(1);
     player.setFacingX(1);
     _impl._keepmoving = true;
@@ -260,16 +260,16 @@ STATE Game::keepMoving_downright() {
     return STATE::MOVING;
 }
 
-STATE Game::moveover() {
+STATE Game::moveOver() {
     _impl._keepmoving = false;
     _impl._pickup = false;
     return _impl.directed("move over", &GameImpl::move);
 }
 
-STATE Game::keepMovingover() {
+STATE Game::runOver() {
     _impl._keepmoving = true;
     _impl._pickup = false;
-    return _impl.directed("keep moving over", &GameImpl::move);
+    return _impl.directed("run over", &GameImpl::move);
 }
 
 STATE Game::open() {
