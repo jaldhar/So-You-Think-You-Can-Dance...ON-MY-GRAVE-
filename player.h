@@ -15,6 +15,10 @@ class Player : public Combat {
 public:
     Player();
     virtual ~Player();
+    int                      facingX() const;
+    void                     setFacingX(int x);
+    int                      facingY() const;
+    void                     setFacingY(int y);
     Armor*                   armor() const;
     void                     setArmor(Armor* armor);
     int                      potions() const;

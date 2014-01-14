@@ -26,22 +26,21 @@ static View view;
 static World world;
 
 struct Game::GameImpl {
-    STATE directed(string command, function<STATE(GameImpl&, int, int)> func);
-    STATE directedClose(int row, int col);
-    STATE close(Door*& door);
-    STATE continuousFight(int row, int col);
-    STATE oneFight(int row, int col);
-    STATE directedFight(int row, int col, bool continuous = true);
+    STATE directed(string command, function<STATE(GameImpl&)> func);
+    STATE close();
+    STATE fight();
     STATE fightHere(int row, int col, Monster*& monster);
-    STATE directedMove(int row, int col);
-    STATE move(int row, int col, bool pickup = true);
-    STATE directedOpen(int row, int col);
-    STATE open(Door*& door);
+    bool  canMove(int row, int col);
+    STATE move();
+    STATE open();
     STATE takeHere(int row, int col);
     STATE take(int row, int col, Item*& item);
 
     string _name;
     string _version;
+    bool   _keepfighting;
+    bool   _keepmoving;
+    bool   _pickup;
 } Game::_impl;
 
 Game::Game()=default;
@@ -53,6 +52,9 @@ int Game::run(const char *name, const char *version) {
 
     _impl._name = name;
     _impl._version = version;
+    _impl._keepfighting = false;
+    _impl._keepmoving = false;
+    _impl._pickup = false;
 
     STATE state = STATE::COMMAND;
     bool running = true;
@@ -67,16 +69,31 @@ int Game::run(const char *name, const char *version) {
     while(running) {
         switch(state) {
             case STATE::COMMAND:
+                _impl._keepfighting = false;
+                _impl._keepmoving = false;
+                _impl._pickup = false;
                 state = view.handleTopLevelInput(this);
                 break;
             case STATE::FIGHTING:
-                state = view.handleTopLevelInput(this);
+                _impl._keepmoving = false;
+                _impl._pickup = false;
+                state = _impl.fight();
+                break;
+            case STATE::MOVING:
+                _impl._keepfighting = false;
+                state = _impl.move();
                 break;
             case STATE::QUIT:
+                _impl._keepfighting = false;
+                _impl._keepmoving = false;
+                _impl._pickup = false;
                 running = false;
                 break;
             case STATE::ERROR:
             default:
+                _impl._keepfighting = false;
+                _impl._keepmoving = false;
+                _impl._pickup = false;
                 state = error();
                 break;
         }
@@ -96,7 +113,7 @@ STATE Game::badInput() {
 }
 
 STATE Game::close() {
-    return _impl.directed("close", &GameImpl::directedClose);
+    return _impl.directed("close", &GameImpl::close);
 }
 
 STATE Game::error() {
@@ -106,51 +123,157 @@ STATE Game::error() {
 }
 
 STATE Game::fight() {
-    return _impl.directed("fight", &GameImpl::oneFight);
+    _impl._keepfighting = false;
+    return _impl.directed("fight", &GameImpl::fight);
 }
 
 STATE Game::keepFighting() {
-    return _impl.directed("fight to the death", &GameImpl::continuousFight);
+    _impl._keepfighting = true;
+    return _impl.directed("fight to the death", &GameImpl::fight);
 }
 
 STATE Game::move_left() {
-    return _impl.move( world.playerRow(), world.playerCol() - 1 );
+    player.setFacingY(0);
+    player.setFacingX(-1);
+    _impl._keepmoving = false;
+    _impl._pickup = true;
+    return STATE::MOVING;
 }
 
 STATE Game::move_down() {
-    return _impl.move( world.playerRow() + 1, world.playerCol() );
+    player.setFacingY(1);
+    player.setFacingX(0);
+    _impl._keepmoving = false;
+    _impl._pickup = true;
+    return STATE::MOVING;
 }
 
 STATE Game::move_up() {
-    return _impl.move( world.playerRow() - 1, world.playerCol() );
+    player.setFacingY(-1);
+    player.setFacingX(0);
+    _impl._keepmoving = false;
+    _impl._pickup = true;
+    return STATE::MOVING;
 }
 
 STATE Game::move_right() {
-    return _impl.move( world.playerRow(), world.playerCol() + 1 );
+    player.setFacingY(0);
+    player.setFacingX(1);
+    _impl._keepmoving = false;
+    _impl._pickup = true;
+    return STATE::MOVING;
 }
 
 STATE Game::move_upleft() {
-    return _impl.move( world.playerRow() - 1, world.playerCol() - 1 );
+    player.setFacingY(-1);
+    player.setFacingX(-1);
+    _impl._keepmoving = false;
+    _impl._pickup = true;
+    return STATE::MOVING;
 }
 
 STATE Game::move_upright() {
-    return _impl.move( world.playerRow() - 1, world.playerCol() + 1 );
+    player.setFacingY(-1);
+    player.setFacingX(1);
+    _impl._keepmoving = false;
+    _impl._pickup = true;
+    return STATE::MOVING;
 }
 
 STATE Game::move_downleft() {
-    return _impl.move( world.playerRow() + 1, world.playerCol() - 1 );
+    player.setFacingY(1);
+    player.setFacingX(-1);
+    _impl._keepmoving = false;
+    _impl._pickup = true;
+    return STATE::MOVING;
 }
 
 STATE Game::move_downright() {
-    return _impl.move( world.playerRow() + 1, world.playerCol() + 1 );
+    player.setFacingY(1);
+    player.setFacingX(1);
+    _impl._keepmoving = false;
+    _impl._pickup = true;
+    return STATE::MOVING;
+}
+
+STATE Game::keepMoving_left() {
+    player.setFacingY(0);
+    player.setFacingX(-1);
+    _impl._keepmoving = true;
+    _impl._pickup = true;
+    return STATE::MOVING;
+}
+
+STATE Game::keepMoving_down() {
+    player.setFacingY(1);
+    player.setFacingX(0);
+    _impl._keepmoving = true;
+    _impl._pickup = true;
+    return STATE::MOVING;
+}
+
+STATE Game::keepMoving_up() {
+    player.setFacingY(-1);
+    player.setFacingX(0);
+    _impl._keepmoving = true;
+    _impl._pickup = true;
+    return STATE::MOVING;
+}
+
+STATE Game::keepMoving_right() {
+    player.setFacingY(0);
+    player.setFacingX(1);
+    _impl._keepmoving = true;
+    _impl._pickup = true;
+    return STATE::MOVING;
+}
+
+STATE Game::keepMoving_upleft() {
+    player.setFacingY(-1);
+    player.setFacingX(-1);
+    _impl._keepmoving = true;
+    _impl._pickup = true;
+    return STATE::MOVING;
+}
+
+STATE Game::keepMoving_upright() {
+    player.setFacingY(-1);
+    player.setFacingX(1);
+    _impl._keepmoving = true;
+    _impl._pickup = true;
+    return STATE::MOVING;
+}
+
+STATE Game::keepMoving_downleft() {
+    player.setFacingY(1);
+    player.setFacingX(-1);
+    _impl._keepmoving = true;
+    _impl._pickup = true;
+    return STATE::MOVING;
+}
+
+STATE Game::keepMoving_downright() {
+    player.setFacingY(1);
+    player.setFacingX(1);
+    _impl._keepmoving = true;
+    _impl._pickup = true;
+    return STATE::MOVING;
 }
 
 STATE Game::moveover() {
-    return _impl.directed("move over", &GameImpl::directedMove);
+    _impl._keepmoving = false;
+    _impl._pickup = false;
+    return _impl.directed("move over", &GameImpl::move);
+}
+
+STATE Game::keepMovingover() {
+    _impl._keepmoving = true;
+    _impl._pickup = false;
+    return _impl.directed("keep moving over", &GameImpl::move);
 }
 
 STATE Game::open() {
-    return _impl.directed("open", &GameImpl::directedOpen);
+    return _impl.directed("open", &GameImpl::open);
 }
 
 STATE Game::quaff() {
@@ -201,46 +324,21 @@ STATE Game::version() {
     return STATE::COMMAND;
 }
 
-STATE Game::GameImpl::directedClose(int row, int col) {
-    if (Door* door = dynamic_cast<Door*>(world.itemAt(row, col))) {
-        return close(door);
-    }
-    view.message("Nothing to close here.");
-    return STATE::ERROR;
-}
-
-STATE Game::GameImpl::close(Door*& door) {
+STATE Game::GameImpl::close() {
+    int row = world.playerRow() + player.facingY();
+    int col = world.playerCol() + player.facingX();
     view.message("");
 
-    if (door->open() == false) {
-        view.message("The door is already closed.");
-        return STATE::ERROR;
-    } else {
-        door->setOpen(false);
+    if (Door* door = dynamic_cast<Door*>(world.itemAt(row, col))) {
+        if (door->open() == false) {
+            view.message("The door is already closed.");
+            return STATE::ERROR;
+        } else {
+            door->setOpen(false);
+        }
+        return STATE::COMMAND;
     }
-    return STATE::COMMAND;
-}
-
-STATE Game::GameImpl::continuousFight(int row, int col) {
-    return directedFight(row, col);
-}
-
-STATE Game::GameImpl::oneFight(int row, int col) {
-    return directedFight(row, col, false);
-}
-
-STATE Game::GameImpl::directedFight(int row, int col, bool continuous) {
-    if (Monster* monster = dynamic_cast<Monster*>(world.itemAt(row, col))) {
-        STATE result;
-        do {
-            result = fightHere(row, col, monster);
-            if (result != STATE::FIGHTING) {
-                break;
-            }
-        } while (continuous);
-        return result;
-    }
-    view.message("Nothing to fight here.");
+    view.message("Nothing to close here.");
     return STATE::ERROR;
 }
 
@@ -269,40 +367,55 @@ STATE Game::GameImpl::fightHere(int row, int col, Monster*& monster) {
             " damage).  ";
     }
 
-    STATE state = STATE::FIGHTING;
- 
+    STATE result = _keepfighting ? STATE::FIGHTING : STATE::COMMAND;
+
     if ( monster->health() < 1 ) {
         world.setPlayerRow(row);
         world.setPlayerCol(col);
         output << "You kill the "  << monster->name() << ".";
         world.removeItem(row, col, true);
-        state = STATE::COMMAND;
+        result = STATE::COMMAND;
     }
 
     view.message(output.str().c_str());
 
-    return state;
+    return result;
 }
 
-STATE Game::GameImpl::directedMove(int row, int col) {
-    return move(row, col, false);
+STATE Game::GameImpl::fight() {
+    int row = world.playerRow() + player.facingY();
+    int col = world.playerCol() + player.facingX();
+    if (Monster* monster = dynamic_cast<Monster*>(world.itemAt(row, col))) {
+        return fightHere(row, col, monster);
+    }
+    view.message("Nothing to fight here.");
+    return STATE::ERROR;
 }
 
-STATE Game::GameImpl::move(int row, int col, bool pickup) {
+bool Game::GameImpl::canMove(int row, int col) {
     if (row < 0
         || row >= world.height()
         || col < 0
-        || col >= world.width()
-    ) {
-        view.message("You can't go there!");
-        return STATE::COMMAND;
+        || col >= world.width()) {
+        return false;
     }
 
     Tile* t = world.tileAt( row, col );
-
     if(t->passable() == false) {
-        view.message("You can't go there!");
-        return STATE::COMMAND;
+        return false;
+    }
+
+    return true;
+}
+
+STATE Game::GameImpl::move() {
+    int row = world.playerRow() + player.facingY();
+    int col = world.playerCol() + player.facingX();
+    if(canMove(row, col) == false) {
+        if (_keepmoving == false) {
+            view.message("You can't go there!");
+        }
+        return STATE::ERROR;
     }
 
     if (Item *item = world.itemAt(row, col)) {
@@ -319,7 +432,7 @@ STATE Game::GameImpl::move(int row, int col, bool pickup) {
         }
 
         else {
-            if (pickup) {
+            if (_pickup) {
                 return take(row, col, item);
             }
         }
@@ -329,27 +442,25 @@ STATE Game::GameImpl::move(int row, int col, bool pickup) {
     world.setPlayerCol(col);
     view.message("");
 
-    return STATE::COMMAND;
+    return _keepmoving ? STATE::MOVING : STATE::COMMAND;
 }
 
-STATE Game::GameImpl::directedOpen(int row, int col) {
+STATE Game::GameImpl::open() {
+    int row = world.playerRow() + player.facingY();
+    int col = world.playerCol() + player.facingX();
+    view.message("");
+
     if (Door* door = dynamic_cast<Door*>(world.itemAt(row, col))) {
-        return open(door);
+        if (door->open() == true) {
+            view.message("The door is already open.");
+            return STATE::ERROR;
+        } else {
+            door->setOpen(true);
+        }
+        return STATE::COMMAND;
     }
     view.message("Nothing to open here.");
     return STATE::ERROR;
-}
-
-STATE Game::GameImpl::open(Door*& door) {
-    view.message("");
-
-    if (door->open() == true) {
-        view.message("The door is already open.");
-        return STATE::ERROR;
-    } else {
-        door->setOpen(true);
-    }
-    return STATE::COMMAND;
 }
 
 STATE Game::GameImpl::takeHere(int row, int col) {
@@ -415,7 +526,7 @@ STATE Game::GameImpl::take(int row, int col, Item*& item) {
 }
 
 STATE Game::GameImpl::directed(string command,
-    function<STATE(GameImpl&, int, int)> func) {
+    function<STATE(GameImpl&)> func) {
 
     stringstream prompt;
     prompt << command << " in which direction?";
@@ -423,28 +534,44 @@ STATE Game::GameImpl::directed(string command,
 
     switch(view.handleDirectionInput()) {
         case DIRECTION::NORTH:
-            return func(_impl, world.playerRow() - 1 , world.playerCol());
+            player.setFacingY(-1);
+            player.setFacingX(0);
+            return func(_impl);
             break;
         case DIRECTION::EAST:
-            return func(_impl, world.playerRow(), world.playerCol() + 1 );
+            player.setFacingY(0);
+            player.setFacingX(1);
+            return func(_impl);
             break;
         case DIRECTION::WEST:
-            return func(_impl, world.playerRow(), world.playerCol() - 1 );
+            player.setFacingY(0);
+            player.setFacingX(-1);
+            return func(_impl);
             break;
         case DIRECTION::SOUTH:
-            return func(_impl, world.playerRow() + 1, world.playerCol());
+            player.setFacingY(1);
+            player.setFacingX(0);
+            return func(_impl);
             break;
         case DIRECTION::NORTHWEST:
-            return func(_impl, world.playerRow() - 1, world.playerCol() - 1 );
+            player.setFacingY(-1);
+            player.setFacingX(-1);
+            return func(_impl);
             break;
         case DIRECTION::NORTHEAST:
-            return func(_impl, world.playerRow() - 1, world.playerCol() + 1 );
+            player.setFacingY(-1);
+            player.setFacingX(1);
+            return func(_impl);
             break;
         case DIRECTION::SOUTHWEST:
-            return func(_impl, world.playerRow() + 1, world.playerCol() - 1 );
+            player.setFacingY(1);
+            player.setFacingX(-1);
+            return func(_impl);
             break;
         case DIRECTION::SOUTHEAST:
-            return func(_impl, world.playerRow() + 1, world.playerCol() + 1 );
+            player.setFacingY(1);
+            player.setFacingX(1);
+            return func(_impl);
             break;
         case DIRECTION::CANCELLED:
             view.message("");

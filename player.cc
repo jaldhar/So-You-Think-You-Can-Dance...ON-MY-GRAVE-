@@ -11,6 +11,8 @@ struct Player::PlayerImpl {
     PlayerImpl();
     ~PlayerImpl()=default;
 
+    int                 _facingX;
+    int                 _facingY;
     unique_ptr<Armor>  _armor;
     int                _potions;
     unique_ptr<Shield> _shield;
@@ -22,6 +24,22 @@ Player::Player() : Combat(17, 1, 1) {
 }
 
 Player::~Player()=default;
+
+int Player::facingX() const {
+    return _impl._facingX;
+}
+
+void Player::setFacingX(int  x) {
+    _impl._facingX = x;
+}
+
+int Player::facingY() const {
+    return _impl._facingY;
+}
+
+void Player::setFacingY(int  y) {
+    _impl._facingY = y;
+}
 
 Armor* Player::armor() const {
     return _impl._armor.get();
@@ -64,6 +82,8 @@ void Player::setWeapon(Weapon* w) {
 }
 
 Player::PlayerImpl::PlayerImpl() {
+    _facingX = 0;
+    _facingY = 0;
     _potions  = 0;
     _treasure = 0;
 }

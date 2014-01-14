@@ -5,6 +5,6 @@
 
 #include <cstdint>
 
-enum class STATE : std::uint8_t { ERROR = 0, COMMAND, FIGHTING, QUIT };
+enum class STATE : std::uint8_t { ERROR = 0, COMMAND, FIGHTING, MOVING, QUIT };
 
 #endif

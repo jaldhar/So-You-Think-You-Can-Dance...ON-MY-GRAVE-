@@ -23,7 +23,16 @@ public:
     STATE move_upright();
     STATE move_downleft();
     STATE move_downright();
+    STATE keepMoving_left();
+    STATE keepMoving_down();
+    STATE keepMoving_up();
+    STATE keepMoving_right();
+    STATE keepMoving_upleft();
+    STATE keepMoving_upright();
+    STATE keepMoving_downleft();
+    STATE keepMoving_downright();
     STATE moveover();
+    STATE keepMovingover();
     STATE open();
     STATE quaff();
     STATE quit();
