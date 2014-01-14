@@ -31,6 +31,14 @@ public:
     STATE run_upright();
     STATE run_downleft();
     STATE run_downright();
+    STATE runadjacent_left();
+    STATE runadjacent_down();
+    STATE runadjacent_up();
+    STATE runadjacent_right();
+    STATE runadjacent_upleft();
+    STATE runadjacent_upright();
+    STATE runadjacent_downleft();
+    STATE runadjacent_downright();
     STATE moveOver();
     STATE runOver();
     STATE open();

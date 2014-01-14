@@ -148,6 +148,14 @@ void View::init() {
     _impl._commandkeys['U']               = &Game::run_upright;
     _impl._commandkeys['B']               = &Game::run_downleft;
     _impl._commandkeys['N']               = &Game::run_downright;
+    _impl._commandkeys[0x08] /* CTRL-H */ = &Game::runadjacent_left;
+    _impl._commandkeys[0x0a] /* CTRL-J */ = &Game::runadjacent_down;
+    _impl._commandkeys[0x0b] /* CTRL-K */ = &Game::runadjacent_up;
+    _impl._commandkeys[0x0c] /* CTRL-L */ = &Game::runadjacent_right;
+    _impl._commandkeys[0x19] /* CTRL-Y */ = &Game::runadjacent_upleft;
+    _impl._commandkeys[0x15] /* CTRL-U */ = &Game::runadjacent_upright;
+    _impl._commandkeys[0x02] /* CTRL-B */ = &Game::runadjacent_downleft;
+    _impl._commandkeys[0x0e] /* CTRL-N */ = &Game::runadjacent_downright;
     _impl._commandkeys['c']               = &Game::close;
     _impl._commandkeys['f']               = &Game::fight;
     _impl._commandkeys['F']               = &Game::fightToDeath;

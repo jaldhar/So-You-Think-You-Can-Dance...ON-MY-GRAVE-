@@ -30,6 +30,7 @@ struct Game::GameImpl {
     STATE fight();
     STATE fightHere(int row, int col, Monster*& monster);
     bool  canMove(int row, int col);
+    bool  itemIsAdjacent(int row, int col);
     STATE move();
     STATE open();
     STATE take();
@@ -41,6 +42,7 @@ struct Game::GameImpl {
     bool   _keepfighting;
     bool   _keepmoving;
     bool   _pickup;
+    bool    _runadjacent;
 } Game::_impl;
 
 Game::Game()=default;
@@ -55,6 +57,7 @@ int Game::run(const char *name, const char *version) {
     _impl._keepfighting = false;
     _impl._keepmoving = false;
     _impl._pickup = false;
+    _impl._runadjacent = false;
 
     STATE state = STATE::COMMAND;
     bool running = true;
@@ -72,11 +75,13 @@ int Game::run(const char *name, const char *version) {
                 _impl._keepfighting = false;
                 _impl._keepmoving = false;
                 _impl._pickup = false;
+                _impl._runadjacent = false;
                 state = view.handleTopLevelInput(this);
                 break;
             case STATE::FIGHTING:
                 _impl._keepmoving = false;
                 _impl._pickup = false;
+                _impl._runadjacent = false;
                 state = _impl.fight();
                 break;
             case STATE::MOVING:
@@ -87,6 +92,7 @@ int Game::run(const char *name, const char *version) {
                 _impl._keepfighting = false;
                 _impl._keepmoving = false;
                 _impl._pickup = false;
+                _impl._runadjacent = false;
                 running = false;
                 break;
             case STATE::ERROR:
@@ -94,6 +100,7 @@ int Game::run(const char *name, const char *version) {
                 _impl._keepfighting = false;
                 _impl._keepmoving = false;
                 _impl._pickup = false;
+                _impl._runadjacent = false;
                 state = error();
                 break;
         }
@@ -137,6 +144,7 @@ STATE Game::move_left() {
     player.setFacingX(-1);
     _impl._keepmoving = false;
     _impl._pickup = true;
+    _impl._runadjacent = false;
     return STATE::MOVING;
 }
 
@@ -145,6 +153,7 @@ STATE Game::move_down() {
     player.setFacingX(0);
     _impl._keepmoving = false;
     _impl._pickup = true;
+    _impl._runadjacent = false;
     return STATE::MOVING;
 }
 
@@ -153,6 +162,7 @@ STATE Game::move_up() {
     player.setFacingX(0);
     _impl._keepmoving = false;
     _impl._pickup = true;
+    _impl._runadjacent = false;
     return STATE::MOVING;
 }
 
@@ -161,6 +171,7 @@ STATE Game::move_right() {
     player.setFacingX(1);
     _impl._keepmoving = false;
     _impl._pickup = true;
+    _impl._runadjacent = false;
     return STATE::MOVING;
 }
 
@@ -169,6 +180,7 @@ STATE Game::move_upleft() {
     player.setFacingX(-1);
     _impl._keepmoving = false;
     _impl._pickup = true;
+    _impl._runadjacent = false;
     return STATE::MOVING;
 }
 
@@ -177,6 +189,7 @@ STATE Game::move_upright() {
     player.setFacingX(1);
     _impl._keepmoving = false;
     _impl._pickup = true;
+    _impl._runadjacent = false;
     return STATE::MOVING;
 }
 
@@ -185,6 +198,7 @@ STATE Game::move_downleft() {
     player.setFacingX(-1);
     _impl._keepmoving = false;
     _impl._pickup = true;
+    _impl._runadjacent = false;
     return STATE::MOVING;
 }
 
@@ -193,6 +207,7 @@ STATE Game::move_downright() {
     player.setFacingX(1);
     _impl._keepmoving = false;
     _impl._pickup = true;
+    _impl._runadjacent = false;
     return STATE::MOVING;
 }
 
@@ -201,6 +216,7 @@ STATE Game::run_left() {
     player.setFacingX(-1);
     _impl._keepmoving = true;
     _impl._pickup = true;
+    _impl._runadjacent = false;
     return STATE::MOVING;
 }
 
@@ -209,6 +225,7 @@ STATE Game::run_down() {
     player.setFacingX(0);
     _impl._keepmoving = true;
     _impl._pickup = true;
+    _impl._runadjacent = false;
     return STATE::MOVING;
 }
 
@@ -217,6 +234,7 @@ STATE Game::run_up() {
     player.setFacingX(0);
     _impl._keepmoving = true;
     _impl._pickup = true;
+    _impl._runadjacent = false;
     return STATE::MOVING;
 }
 
@@ -225,6 +243,7 @@ STATE Game::run_right() {
     player.setFacingX(1);
     _impl._keepmoving = true;
     _impl._pickup = true;
+    _impl._runadjacent = false;
     return STATE::MOVING;
 }
 
@@ -233,6 +252,7 @@ STATE Game::run_upleft() {
     player.setFacingX(-1);
     _impl._keepmoving = true;
     _impl._pickup = true;
+    _impl._runadjacent = false;
     return STATE::MOVING;
 }
 
@@ -241,6 +261,7 @@ STATE Game::run_upright() {
     player.setFacingX(1);
     _impl._keepmoving = true;
     _impl._pickup = true;
+    _impl._runadjacent = false;
     return STATE::MOVING;
 }
 
@@ -249,6 +270,7 @@ STATE Game::run_downleft() {
     player.setFacingX(-1);
     _impl._keepmoving = true;
     _impl._pickup = true;
+    _impl._runadjacent = false;
     return STATE::MOVING;
 }
 
@@ -257,6 +279,79 @@ STATE Game::run_downright() {
     player.setFacingX(1);
     _impl._keepmoving = true;
     _impl._pickup = true;
+    _impl._runadjacent = false;
+    return STATE::MOVING;
+}
+
+STATE Game::runadjacent_left() {
+    player.setFacingY(0);
+    player.setFacingX(-1);
+    _impl._keepmoving = true;
+    _impl._pickup = false;
+    _impl._runadjacent = true;
+    return STATE::MOVING;
+}
+
+STATE Game::runadjacent_down() {
+    player.setFacingY(1);
+    player.setFacingX(0);
+    _impl._keepmoving = true;
+    _impl._pickup = false;
+    _impl._runadjacent = true;
+    return STATE::MOVING;
+}
+
+STATE Game::runadjacent_up() {
+    player.setFacingY(-1);
+    player.setFacingX(0);
+    _impl._keepmoving = true;
+    _impl._pickup = false;
+    _impl._runadjacent = true;
+    return STATE::MOVING;
+}
+
+STATE Game::runadjacent_right() {
+    player.setFacingY(0);
+    player.setFacingX(1);
+    _impl._keepmoving = true;
+    _impl._pickup = false;
+    _impl._runadjacent = true;
+    return STATE::MOVING;
+}
+
+STATE Game::runadjacent_upleft() {
+    player.setFacingY(-1);
+    player.setFacingX(-1);
+    _impl._keepmoving = true;
+    _impl._pickup = false;
+    _impl._runadjacent = true;
+    return STATE::MOVING;
+}
+
+STATE Game::runadjacent_upright() {
+    player.setFacingY(-1);
+    player.setFacingX(1);
+    _impl._keepmoving = true;
+    _impl._pickup = false;
+    _impl._runadjacent = true;
+    return STATE::MOVING;
+}
+
+STATE Game::runadjacent_downleft() {
+    player.setFacingY(1);
+    player.setFacingX(-1);
+    _impl._keepmoving = true;
+    _impl._pickup = false;
+    _impl._runadjacent = true;
+    return STATE::MOVING;
+}
+
+STATE Game::runadjacent_downright() {
+    player.setFacingY(1);
+    player.setFacingX(1);
+    _impl._keepmoving = true;
+    _impl._pickup = false;
+    _impl._runadjacent = true;
     return STATE::MOVING;
 }
 
@@ -408,6 +503,17 @@ bool Game::GameImpl::canMove(int row, int col) {
     return true;
 }
 
+bool Game::GameImpl::itemIsAdjacent(int row, int col) {
+    for (int y = row - 1; y <= row + 1; y++) {
+        for (int x = col - 1; x <= col + 1; x++) {
+            if (world.itemAt(y, x) != nullptr) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 STATE Game::GameImpl::move() {
     int row = world.playerRow() + player.facingY();
     int col = world.playerCol() + player.facingX();
@@ -441,6 +547,10 @@ STATE Game::GameImpl::move() {
     world.setPlayerRow(row);
     world.setPlayerCol(col);
     view.message("");
+
+    if (_runadjacent && itemIsAdjacent(row, col)) {
+        return STATE::COMMAND;
+    }
 
     return _keepmoving ? STATE::MOVING : STATE::COMMAND;
 }
