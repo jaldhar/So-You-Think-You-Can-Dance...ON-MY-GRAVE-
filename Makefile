@@ -1,34 +1,59 @@
-TARGET=sytycdomg
-CXXFLAGS=-std=c++0x -pedantic -O2 -g -Wall -Wextra -Wcast-qual -Wformat=2 $(shell ncurses5-config --cflags)
-LDFLAGS=$(shell ncurses5-config --libs)
-PREFIX=/usr/local
+PROGRAM=sytycdomg
+SRCDIR:=../src
+INCDIR:=../include
+PREFIX?=/usr/local
+BINDIR?=bin
 
-OBJECTS= sytycdomg.o \
-         armament.o \
-         armor.o \
-         combat.o \
-         door.o \
-         game.o \
-         item.o \
-         monster.o \
-         player.o \
-         potion.o \
-         room.o \
-         shield.o \
-         tile.o \
-         treasure.o \
-         view.o \
-         weapon.o \
-         world.o
-      
-$(TARGET): $(OBJECTS)
-	$(CXX) -o $(TARGET) $(OBJECTS) $(LDFLAGS)
-      
-install: $(TARGET)
-	install -oroot -groot -m0755 -s $(TARGET) $(PREFIX)/games
+SRC:=$(wildcard $(SRCDIR)/*.cc)
+OBJECTS:=$(patsubst $(SRCDIR)/%.cc,./%.o,$(SRC))
+DEPFILES:=$(patsubst $(SRCDIR)/%.cc,./%.d,$(SRC))
 
-memcheck: $(TARGET)
-	valgrind --leak-check=full ./$(TARGET)
+CXX?=/usr/bin/g++
+STRIP?=/usr/bin/strip --strip-all  -R .comment -R .note $(PROGRAM)
+INSTALL?=/usr/bin/install
+VALGRIND?=/usr/bin/valgrind
+
+DEPFLAGS=-MT $@ -MMD -MP -MF $*.d
+NCURSESFLAGS=$(shell ncurses5-config --cflags)
+CPPFLAGS+=$(DEPFLAGS) -I$(INCDIR) $(NCURSESFLAGS)
+CXXFLAGS+=-std=c++17 -Wall -Wextra -Wpedantic -Weffc++ -flto
+LDFLAGS+=-ffunction-sections -fdata-sections -Wl,-gc-sections
+LIBS=$(shell ncurses5-config --libs)
+get_builddir = '$(findstring '$(notdir $(CURDIR))', 'debug' 'release')'
+
+.cc.o:
+
+$(PROGRAM): $(OBJECTS) | checkinbuilddir
+	$(LINK.cc) $(OUTPUT_OPTION) $^ $(LIBS)
+	$(STRIP)
+
+$(DEPFILES):
+
+checkinbuilddir:
+ifeq ($(call get_builddir), '')
+	$(error 'Change to the debug or release directories and run make from there.')
+endif
+
+checkintopdir:
+ifneq ($(call get_builddir), '')
+	$(error 'Make this target from the top-level directory.')
+endif
+
+memcheck: $(PROGRAM) | checkinbuilddir
+	$(VALGRIND) --suppressions=../valgrind.suppressions --quiet --verbose --trace-children=yes --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind.log ./$(PROGRAM)
+
+install:
+	@cd release && $(MAKE) install-$(PROGRAM)
 
 clean:
-	-rm sytycdomg $(OBJECTS)
+	-$(RM) *.o *.d valgrind.log $(PROGRAM)
+
+distclean: | checkintopdir
+	cd debug && $(MAKE) clean
+	cd release && $(MAKE) clean
+
+.PHONY: checkinbuilddir checkintopdir memcheck install clean distclean
+
+.DELETE_ON_ERROR:
+
+-include $(wildcard $(DEPFILES))
