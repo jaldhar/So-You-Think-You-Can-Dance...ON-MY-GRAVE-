@@ -73,29 +73,49 @@ succeed.  Aeons of torment in the Planes of Unlife await you if you fail.</p>
 <h2>Installation</h2>
 <p>This program was written in C++ on Linux.  There is no binary yet so  you will have to download the source and run:</p>
 <pre><code>
+    $ cd release
+</code></pre>
+<p></p>...or if you want a debug build (only developers will need this.) run:</p>
+<pre><code>
+    $ cd debug
+</code></pre>
+<p>and then run:</p>
+<pre><code>
     $ make
+</code></pre>
+<p>Then while still in the debug or release directories, type:</p>
+<pre><code>
+  $ make
+</code></pre>
+<p>To run the game, again from the debug or release directories, type:</p>
+<pre><code>
+  $ ./sytycdomg
 </code></pre>
 
 <p>You will need the following:</p>
 <ul>
-<li>g++</li>
-<li>ncurses</li>
+<li>g++ or other C++17 compiler </li>
+<li>ncurses 5 or above.</li>
+<li>GNU make</li>
 </ul>
 
-<p>Optionally you can install the game into /usr/games by running as root:</p>
-
+<p>Optionally you can install the game into /usr/local/bin by running as root:</p>
 <pre><code>
     # make install
 </code></pre>
-    
-<p>If you want to remove all the generated files, run:</p>
+<p>The makefile respects PREFIX and DESTDIR if you want to install it elsewhere.</p>
 
+<p>If you want to remove generated files, run:</p>
 <pre><code>
     $ make clean
 </code></pre>
-    
+<p>To really clean all generated files, change to the top-level directory and run:</p>
+<pre><code>
+  $ make distclean
+</code></pre>
+
 <h2>The Crowley Public License</h2>
-<p>Copyright (C) 2010, Consolidated Braincells Inc.  All rights reserved.</p>
+<p>Copyright (C) 2020, Consolidated Braincells Inc.  All rights reserved.</p>
 <p>Do what Though Wilt Shall Be The Whole of The License.</p>
 
 <h2>Authors</h2>
